@@ -37,10 +37,9 @@ struct SHeadBlendStageInput
 	int3 PostBlendColorize[2];
 	int3 PostBlendAdjust[2];
 	PostBlendColorMode PostBlendMode;
-
 	int Flags;
-
-	MappingTweaks *Tweaks;
+	float OtherHeadBlend;
+	CPUTTexture *OtherHeadTexture;
 };
 
 struct SHeadBlendStageOutput

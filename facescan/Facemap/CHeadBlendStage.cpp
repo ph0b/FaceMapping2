@@ -105,9 +105,9 @@ void CHeadBlendStage::Execute(SHeadBlendStageInput *input)
 	SetCodeTexture(2, input->BaseHeadInfo->Textures[eBaseHeadTexture_FeatureMap]);
 	SetCodeTexture(3, input->BaseHeadInfo->Textures[eBaseHeadTexture_ColorTransfer]);
 	SetCodeTexture(4, input->BaseHeadInfo->Textures[eBaseHeadTexture_Skin]);
-	SetCodeTexture(5, input->Tweaks->OtherHeadTexture);
+	SetCodeTexture(5, input->OtherHeadTexture);
 	
-	cb.OtherHeadBlend = input->Tweaks->OtherHeadBlend;
+	cb.OtherHeadBlend = input->OtherHeadBlend;
 	
 	// convert to linear RGB
 	cb.HeadColor1.x = pow(input->BlendColor1.r, 2.2f);

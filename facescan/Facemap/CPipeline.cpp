@@ -47,17 +47,17 @@ bool MappingTweaks::operator==(const MappingTweaks &other) const
 	CMP_EQL(OtherHeadMesh);
 	CMP_EQL(OtherHeadTexture);
 	CMP_EQL(Flags)
-	return same;
+		return same;
 }
 
 CPipeline::CPipeline() :
-DisplacementMapStage(NULL),
-HeadGeometryStage(NULL),
-HeadBlendStage(NULL)
+	DisplacementMapStage(NULL),
+	HeadGeometryStage(NULL),
+	HeadBlendStage(NULL)
 {
 }
 
-CPipeline::~CPipeline() 
+CPipeline::~CPipeline()
 {
 	SAFE_DELETE(DisplacementMapStage);
 	SAFE_DELETE(HeadGeometryStage);
@@ -67,26 +67,12 @@ CPipeline::~CPipeline()
 	HairStages.clear();
 }
 
-void CPipeline::GetOutput(CPipelineOutput *output)
-{
-	output->DiffuseTexture = HeadBlendStage->Output.OutputDiffuse;
-	output->DeformedMesh = &mDeformedMesh;
-	
-	output->DeformedHairMeshes.clear();
-	for (int i = 0; i < (int)HairStages.size(); i++)
-	{
-		output->DeformedHairMeshes.push_back(&HairStages[i]->DeformedHair);
-	}
-}
-
-void CPipeline::Execute(SPipelineInput *input, CPipelineOutput *output)
-{
-	///////////////////////////////////////////////////////////////////////////
-	// Displacement Maps
+void CPipeline::executeDisplacementMapStage(SPipelineInput *input) {
 	if (DisplacementMapStage == NULL)
 	{
 		DisplacementMapStage = new CDisplacementMapStage();
 	}
+
 	SDisplacementMapStageInput dmInput = {};
 	dmInput.FaceModel = input->FaceModel;
 	dmInput.RenderParams = input->RenderParams;
@@ -94,32 +80,38 @@ void CPipeline::Execute(SPipelineInput *input, CPipelineOutput *output)
 	dmInput.FacePitch = input->Tweaks->FacePitch;
 	dmInput.FaceRoll = input->Tweaks->FaceRoll;
 	DisplacementMapStage->Execute(&dmInput);
+}
 
-	///////////////////////////////////////////////////////////////////////////
-	// Head Geometry
+void CPipeline::executeHeadGeometryStage(SPipelineInput *input, CDisplacementMapStageOutput* displacementMapStageOutput) {
 	if (HeadGeometryStage == NULL)
 	{
 		HeadGeometryStage = new CHeadGeometryStage();
 	}
+
 	SHeadGeometryStageInput hgInput = {};
-	hgInput.DisplacementMap = DisplacementMapStage->Output.DepthMap->GetSoftwareTexture(false, true);
-	hgInput.DisplacementMapInfo = &DisplacementMapStage->Output;
+	hgInput.DisplacementMap = displacementMapStageOutput->DepthMap->GetSoftwareTexture(false, true);
+	hgInput.DisplacementMapInfo = displacementMapStageOutput;
 	hgInput.BaseHeadInfo = input->BaseHeadInfo;
-	hgInput.Tweaks = input->Tweaks;
+	hgInput.Scale = input->Tweaks->Scale;
+	hgInput.ZDisplaceOffset = input->Tweaks->DisplaceOffset.z;
+	hgInput.MorphTargetEntries = input->Tweaks->MorphTargetEntries;
+	hgInput.OtherHeadBlend = input->Tweaks->OtherHeadBlend;
+	hgInput.OtherHeadMesh = input->Tweaks->OtherHeadMesh;
+	hgInput.Flags = input->Tweaks->Flags;
 	hgInput.ClearCachedProjections = false;
 	HeadGeometryStage->Execute(&hgInput);
-	
-	///////////////////////////////////////////////////////////////////////////
-	// Head Blend Stage
+}
+
+void CPipeline::executeHeadBlendStage(SPipelineInput *input, CDisplacementMapStageOutput* displacementMapStageOutput, CPUTSoftwareMesh* deformedMesh) {
 	if (HeadBlendStage == NULL)
 	{
 		HeadBlendStage = new CHeadBlendStage();
 	}
 	SHeadBlendStageInput hbInput = {};
 	hbInput.BaseHeadInfo = input->BaseHeadInfo;
-	hbInput.DeformedMesh = &HeadGeometryStage->DeformedMesh;
+	hbInput.DeformedMesh = deformedMesh;
 	hbInput.RenderParams = input->RenderParams;
-	
+
 	hbInput.BlendColor1 = input->Tweaks->BlendColor1;
 	hbInput.BlendColor2 = input->Tweaks->BlendColor2;
 	hbInput.PostBlendAdjust[0] = input->Tweaks->PostBlendAdjust[0];
@@ -128,16 +120,13 @@ void CPipeline::Execute(SPipelineInput *input, CPipelineOutput *output)
 	hbInput.PostBlendColorize[1] = input->Tweaks->PostBlendColorize[1];
 	hbInput.PostBlendMode = input->Tweaks->PostBlendMode;
 	hbInput.Flags = input->Tweaks->Flags;
-	hbInput.Tweaks = input->Tweaks;
-	
-	hbInput.GeneratedFaceColorMap = DisplacementMapStage->Output.ColorMap->GetColorResourceView();
+	hbInput.OtherHeadBlend = input->Tweaks->OtherHeadBlend;
+	hbInput.OtherHeadTexture = input->Tweaks->OtherHeadTexture;
+	hbInput.GeneratedFaceColorMap = displacementMapStageOutput->ColorMap->GetColorResourceView();
 	HeadBlendStage->Execute(&hbInput);
+}
 
-	mDeformedMesh.CopyFrom(&HeadGeometryStage->DeformedMesh);
-	mDeformedMesh.RemoveComponent(eSMComponent_Tex2);
-
-	///////////////////////////////////////////////////////////////////////////
-	// Hair Geometry Stage
+void CPipeline::executeHairGeometryStage(SPipelineInput *input, CPUTSoftwareMesh* deformedHead) {
 	for (int i = 0; i < (int)input->HairInfo.size(); i++)
 	{
 		if (i >= (int)HairStages.size())
@@ -147,7 +136,7 @@ void CPipeline::Execute(SPipelineInput *input, CPipelineOutput *output)
 
 		SHairGeometryStageInput hairGeomInput;
 		hairGeomInput.BaseHead = input->BaseHeadInfo->BaseHeadMesh;
-		hairGeomInput.DeformedHead = &mDeformedMesh;
+		hairGeomInput.DeformedHead = deformedHead;
 		hairGeomInput.Hair = input->HairInfo[i].Mesh;
 		hairGeomInput.ClearCachedProjections = false;
 		HairStages[i]->Execute(&hairGeomInput);
@@ -158,8 +147,30 @@ void CPipeline::Execute(SPipelineInput *input, CPipelineOutput *output)
 		SAFE_DELETE(HairStages[HairStages.size() - 1]);
 		HairStages.pop_back();
 	}
+}
 
-	if ( output != NULL)
-		GetOutput(output);
+void CPipeline::Execute(SPipelineInput *input, CPipelineOutput *output)
+{
+	executeDisplacementMapStage(input);
+
+	executeHeadGeometryStage(input, &DisplacementMapStage->Output);
+
+	executeHeadBlendStage(input, &DisplacementMapStage->Output, &HeadGeometryStage->DeformedMesh);
+
+	mDeformedMesh.CopyFrom(&HeadGeometryStage->DeformedMesh);
+	mDeformedMesh.RemoveComponent(eSMComponent_Tex2);
+
+	executeHairGeometryStage(input, &mDeformedMesh);
+
+	if (output != NULL) {
+		output->DiffuseTexture = HeadBlendStage->Output.OutputDiffuse;
+		output->DeformedMesh = &mDeformedMesh;
+
+		output->DeformedHairMeshes.clear();
+		for (int i = 0; i < (int)HairStages.size(); i++)
+		{
+			output->DeformedHairMeshes.push_back(&HairStages[i]->DeformedHair);
+		}
+	}
 
 }

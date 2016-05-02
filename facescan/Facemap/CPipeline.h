@@ -22,6 +22,7 @@
 
 class CPUTModel;
 class CDisplacementMapStage;
+struct CDisplacementMapStageOutput;
 class CHeadGeometryStage;
 class CHeadBlendStage;
 class CPUTRenderParameters;
@@ -36,7 +37,7 @@ enum PIPELINE_FLAG
 {
 	// Debug Flags
 	PIPELINE_FLAG_SkipFitFace = (1 << 16),
-	PIPELINE_FLAG_SkipDisplacmentMap = (1 << 17),
+	PIPELINE_FLAG_SkipDisplacementMap = (1 << 17),
 	PIPELINE_FLAG_SkipFaceColorBlend = (1 << 18),
 	PIPELINE_FLAG_SkipColorSeamFill = (1 << 19),
 };
@@ -176,8 +177,6 @@ public:
 
 	void Execute(SPipelineInput *input, CPipelineOutput *output);
 
-	void GetOutput(CPipelineOutput *output);
-
 	CDisplacementMapStage *DisplacementMapStage;
 	CHeadGeometryStage *HeadGeometryStage;
 	CHeadBlendStage *HeadBlendStage;
@@ -186,6 +185,11 @@ public:
 
 private:
 	CPUTSoftwareMesh mDeformedMesh;
+
+	void executeDisplacementMapStage(SPipelineInput *input);
+	void executeHeadGeometryStage(SPipelineInput *input, CDisplacementMapStageOutput* displacementMapStageOutput);
+	void executeHeadBlendStage(SPipelineInput *input, CDisplacementMapStageOutput* displacementMapStageOutput, CPUTSoftwareMesh* deformedMesh);
+	void executeHairGeometryStage(SPipelineInput *input, CPUTSoftwareMesh* deformedHead);
 };
 
 #endif

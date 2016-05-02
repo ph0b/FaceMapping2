@@ -68,7 +68,7 @@ CHeadGeometryStage::~CHeadGeometryStage()
 }
 
 
-void CHeadGeometryStage::UpdateHeadProjectionInfo(CDisplacementMapStageOutput *dispMapInfo, SBaseHeadInfo *headInfo, MappingTweaks *tweaks, HeadProjectionInfo *outProjInfo)
+void CHeadGeometryStage::UpdateHeadProjectionInfo(CDisplacementMapStageOutput *dispMapInfo, SBaseHeadInfo *headInfo, float scale, float zDisplaceOffset, HeadProjectionInfo *outProjInfo)
 {
 	float eyeDistanceMS; // model space
 	float2 mapScaleFactor;
@@ -84,9 +84,9 @@ void CHeadGeometryStage::UpdateHeadProjectionInfo(CDisplacementMapStageOutput *d
 	float2 anchorMS = float2(anchor.x, anchor.y);
 
 	// calculate scaling
-	mapScaleFactor.x = (eyeDistanceMS / dispMapInfo->EyeDistance_MapSpace) *tweaks->Scale;
-	mapScaleFactor.y = (eyeDistanceMS / dispMapInfo->EyeDistance_MapSpace) *tweaks->Scale;
-	zScaleMSToRS = (eyeDistanceMS / dispMapInfo->EyeDistance_FaceModelSpace) *tweaks->Scale;
+	mapScaleFactor.x = (eyeDistanceMS / dispMapInfo->EyeDistance_MapSpace) *scale;
+	mapScaleFactor.y = (eyeDistanceMS / dispMapInfo->EyeDistance_MapSpace) *scale;
+	zScaleMSToRS = (eyeDistanceMS / dispMapInfo->EyeDistance_FaceModelSpace) *scale;
 	float zScaleRSToMS = 1.0f / zScaleMSToRS;
 
 	// calculate the projection onto the head model
@@ -112,8 +112,8 @@ void CHeadGeometryStage::UpdateHeadProjectionInfo(CDisplacementMapStageOutput *d
 	float extrudeBaseZ = noseTip.z + extrudeMaxZ;
 
 	// max is nose tip
-	outProjInfo->ExtrudeMinZ = noseTip.z + extrudeMaxZ + tweaks->DisplaceOffset.z;
-	outProjInfo->ExtrudeMaxZ = outProjInfo->ExtrudeMinZ - extrudeMaxZ* tweaks->Scale;
+	outProjInfo->ExtrudeMinZ = noseTip.z + extrudeMaxZ + zDisplaceOffset;
+	outProjInfo->ExtrudeMaxZ = outProjInfo->ExtrudeMinZ - extrudeMaxZ* scale;
 	outProjInfo->DepthMapRangeMin = dispMapInfo->DepthMap_ZMeshStart - extrudeMaxZ * headMSUnitsPerRSUnitsZNormalized;
 	outProjInfo->DepthMapRangeMax = dispMapInfo->DepthMap_ZMeshStart;
 
@@ -220,7 +220,7 @@ void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
 	}
 
 	HeadProjectionInfo hpi;
-	UpdateHeadProjectionInfo(input->DisplacementMapInfo, input->BaseHeadInfo, input->Tweaks, &hpi);
+	UpdateHeadProjectionInfo(input->DisplacementMapInfo, input->BaseHeadInfo, input->Scale, input->ZDisplaceOffset, &hpi);
 
 	MorphedLandmarkMesh.CopyFrom(&input->BaseHeadInfo->LandmarkMesh);
 		
@@ -251,7 +251,7 @@ void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
 	int vertCount = base->GetVertCount();
 
 	// Apply all the morph targets
-	ApplyMorphTargets(input->Tweaks->MorphTargetEntries, &DeformedMesh, false);
+	ApplyMorphTargets(input->MorphTargetEntries, &DeformedMesh, false);
 	
 
 	dstMesh->AddComponent(eSMComponent_Tex2);
@@ -259,7 +259,7 @@ void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
 	
 	CPUTSoftwareTexture *controlMapColor = ((CPUTTextureDX11*)input->BaseHeadInfo->Textures[eBaseHeadTexture_ControlMap_Color])->GetSoftwareTexture(false, true);
 
-	if ((input->Tweaks->Flags & PIPELINE_FLAG_SkipFitFace) == 0)
+	if ((input->Flags & PIPELINE_FLAG_SkipFitFace) == 0)
 	{
 		assert(vertCount == mMappedFaceVertices.size());
 		for (int vIdx = 0; vIdx < vertCount; vIdx++)
@@ -309,7 +309,7 @@ void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
 		controlMapDisplacement->SampleRGBAFromUV(dstMesh->Tex[i].x, dstMesh->Tex[i].y, &controlSample);
 
 		// Blend between displaced Z and default model z based on the control texture's red value
-		if ((input->Tweaks->Flags & PIPELINE_FLAG_SkipDisplacmentMap) == 0)
+		if ((input->Flags & PIPELINE_FLAG_SkipDisplacementMap) == 0)
 			pos.z = floatLerp(pos.z, displacedZ, controlSample.r);
 
 		dstMesh->Tex2[i] = float2(projectedUV.x, projectedUV.y);
@@ -318,13 +318,13 @@ void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
 
 	
 	// Apply all the morph targets
-	ApplyMorphTargets(input->Tweaks->MorphTargetEntries, &DeformedMesh, true);
+	ApplyMorphTargets(input->MorphTargetEntries, &DeformedMesh, true);
 
-	if (input->Tweaks->OtherHeadBlend > 0.0f && input->Tweaks->OtherHeadMesh != NULL)
+	if (input->OtherHeadBlend > 0.0f && input->OtherHeadMesh != NULL)
 	{
 		for (int i = 0; i < vertCount; i++)
 		{
-			dstMesh->Pos[i] = dstMesh->Pos[i] + (input->Tweaks->OtherHeadMesh->Pos[i] - dstMesh->Pos[i]) * input->Tweaks->OtherHeadBlend;
+			dstMesh->Pos[i] = dstMesh->Pos[i] + (input->OtherHeadMesh->Pos[i] - dstMesh->Pos[i]) * input->OtherHeadBlend;
 		}
 	}
 

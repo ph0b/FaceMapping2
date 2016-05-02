@@ -27,16 +27,22 @@ struct CDisplacementMapStageOutput;
 struct SBaseHeadInfo;
 class CPUTSoftwareMesh;
 
-class MappingTweaks;
 struct HeadVertex;
 struct HeadProjectionInfo;
+
+struct MorphTargetEntry;
 
 struct SHeadGeometryStageInput
 {
 	CPUTSoftwareTexture *DisplacementMap;
 	CDisplacementMapStageOutput *DisplacementMapInfo;
 	SBaseHeadInfo *BaseHeadInfo;
-	MappingTweaks *Tweaks;
+	float Scale;
+	float ZDisplaceOffset;
+	std::vector<MorphTargetEntry> MorphTargetEntries;
+	float OtherHeadBlend;
+	CPUTSoftwareMesh *OtherHeadMesh;
+	int Flags;
 	bool ClearCachedProjections;
 };
 
@@ -59,7 +65,7 @@ public:
 
 private:
 
-	void UpdateHeadProjectionInfo(CDisplacementMapStageOutput *dispMapInfo, SBaseHeadInfo *headInfo, MappingTweaks *tweaks, HeadProjectionInfo *outProjInfo);
+	void UpdateHeadProjectionInfo(CDisplacementMapStageOutput *dispMapInfo, SBaseHeadInfo *headInfo, float scale, float zDisplaceOffset, HeadProjectionInfo *outProjInfo);
 
 	// CPU cached vertex data
 	CPUTModel *mCachedModel;

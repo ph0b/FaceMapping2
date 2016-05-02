@@ -167,12 +167,12 @@ bool CFaceModel::LoadLandmarks(const std::string &filename, std::vector<float3> 
 			bool scanValid = true;
 			if (hasConfidence)
 			{
-				int result = sscanf_s(sLine, "%s %d %f %f %f", landmarkName, sizeof(landmarkName), &confidence, &pos.x, &pos.y, &pos.z);
+				int result = sscanf_s(sLine, "%s %d %f %f %f", landmarkName, (unsigned)_countof(landmarkName), &confidence, &pos.x, &pos.y, &pos.z);
 				scanValid = result == 5;
 			}
 			else
 			{
-				int result = sscanf_s(sLine, "%s %f %f %f", landmarkName, sizeof(landmarkName), &pos.x, &pos.y, &pos.z);
+				int result = sscanf_s(sLine, "%s %f %f %f", landmarkName, (unsigned)_countof(landmarkName), &pos.x, &pos.y, &pos.z);
 				scanValid = result == 4;
 			}
 			
