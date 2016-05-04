@@ -154,12 +154,12 @@ void Menu_FaceMapping::ResetCameraDefaults()
 	SAFE_RELEASE(fpsCamera);
 
 	CPUTCamera *pCamera = (CPUTCamera*)mCameraControlViewer->GetCamera();
-	pCamera->SetFov(33.0f * float(3.14159265359 / 180.0));
+	pCamera->SetFov(20.f * float(3.14159265359 / 180.0));
 	pCamera->SetNearPlaneDistance(0.1f);
 	pCamera->SetFarPlaneDistance(400.0f);
 
 	mCameraControlViewer->SetTarget(float3(0, 0, 0));
-	mCameraControlViewer->SetDistance(80.0f, 0.1f, 400.0f);
+	mCameraControlViewer->SetDistance(120.0f, 0.1f, 300.0f);
 	mCameraControlViewer->SetViewAngles(0, 0);
 	
 	mCameraControlOrthographic->SetPosition(float3(0.0f, 0.0f, -50.0f));
@@ -218,8 +218,6 @@ void Menu_FaceMapping::Init()
     CPUTAssetSet *hairHelmet3Set = mHeadAssetScene->GetAssetSet(8);
     CPUTAssetSet *hairHelmet4Set = mHeadAssetScene->GetAssetSet(9);
 	CPUTAssetSet *beardSet = mHeadAssetScene->GetAssetSet(10);
-
-	pAssetLibrary->FindAssetSet("LandmarkMesh");
 
 	// Load landmark positions
 	int landmarkCount = landmarkSet->GetAssetCount();
