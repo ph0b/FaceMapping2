@@ -22,6 +22,7 @@
 #include "CPUTRenderParams.h"
 #include "MenuGlob.h"
 #include <ctime>
+#include <string>
 
 #include "../GameFaceScan.h"
 
@@ -135,13 +136,23 @@ void Menu_Scan::HandleCPUTEvent(int eventID, int controlID, CPUTControl *control
 				// delete any existing temp data
 				FaceScan_MoveScanData(filename .c_str(), NULL);
 				FaceScan_SaveScan(filename.c_str());
+				//TODO: check pxcStatus for Reconstruct call.
 
-				mScanState = ScanState_ScanComplete;
-				
-				gMenu_FaceScanPreview->LoadFaceObj(filename, true, true);
-				gMenu_FaceScanPreview->SetFaceScanMode(FaceScanPreviewMode_ApproveScan);
+				HANDLE hFile = NULL;
+				if((hFile = CreateFileA(filename.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL)) != INVALID_HANDLE_VALUE) // scan created.
+				{
+					CloseHandle(hFile);
+					mScanState = ScanState_ScanComplete;
+					//TODO: finish scan and test file exists.
+					gMenu_FaceScanPreview->LoadFaceObj(filename, true, true);
+					gMenu_FaceScanPreview->SetFaceScanMode(FaceScanPreviewMode_ApproveScan);
 
-				MenuController_PushMenu(gMenu_FaceScanPreview);
+					MenuController_PushMenu(gMenu_FaceScanPreview);
+				}//TODO: handle when scan fails being created.
+				else{
+					FaceScan_CancelScan();
+					SetState(ScanState_ColorFeed);
+				}
 			}
 		} break;
 		case ScanMenuIds_CancelScanning:
@@ -281,7 +292,9 @@ void Menu_Scan::Update(float dt)
 		}
 		if (mScanState == ScanState_Scanning)
 		{
-			CopyPXCImageToTexture(FaceScan_GetScanPreviewImage(), &CameraColorTexture);
+			PXCImage *preview = FaceScan_GetScanPreviewImage();
+			if (preview != NULL)
+				CopyPXCImageToTexture(FaceScan_GetScanPreviewImage(), &CameraColorTexture);
 		}
 		FaceScan_FrameRelease();
 	}

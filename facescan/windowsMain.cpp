@@ -69,6 +69,14 @@ int main(int argc, char **argv)
     CPUTResult result = CPUT_SUCCESS;
     int returnCode = 0;
 
+	// Initialize COM (needed for WIC)
+	HRESULT hr = S_OK;
+	if (FAILED(hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED)))
+	{
+		wprintf(L"Failed to initialize COM (%08X)\n", hr);
+		return 1;
+	}
+
     // create an instance of my sample
     MySample *pSample = new MySample();
    

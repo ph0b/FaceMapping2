@@ -22,6 +22,7 @@
 
 #ifndef DISABLE_RSSDK
 
+#include "pxcfacemodule.h"
 #include "pxcsensemanager.h"
 
 
@@ -29,7 +30,7 @@ struct SFaceScanData
 {
 	PXCSenseManager *SenseManager;
 	PXC3DScan *FaceScan;
-	
+
 	bool FrameAcquired;
 
 	PXCImage *colorImage;
@@ -98,28 +99,28 @@ public:
 		}
 		switch (data.label)
 		{
-			case PXC3DScan::ALERT_FACE_DETECTED: { mStatusDetected = FaceStatusDetected_Detected; } break;
-			case PXC3DScan::ALERT_FACE_NOT_DETECTED: { mStatusDetected = FaceStatusDetected_NotDetected; } break;
+		case PXC3DScan::ALERT_FACE_DETECTED: { mStatusDetected = FaceStatusDetected_Detected; } break;
+		case PXC3DScan::ALERT_FACE_NOT_DETECTED: { mStatusDetected = FaceStatusDetected_NotDetected; } break;
 
-			case PXC3DScan::ALERT_FACE_X_IN_RANGE: { mStatusXAxis = FaceStatusXAxis_InRange; } break;
-			case PXC3DScan::ALERT_FACE_X_TOO_FAR_LEFT: { mStatusXAxis = FaceStatusXAxis_TooFarLeft; } break;
-			case PXC3DScan::ALERT_FACE_X_TOO_FAR_RIGHT: { mStatusXAxis = FaceStatusXAxis_TooFarRight; } break;
-				
-			case PXC3DScan::ALERT_FACE_Y_IN_RANGE: { mStatusYAxis = FaceStatusYAxis_InRange; } break;
-			case PXC3DScan::ALERT_FACE_Y_TOO_FAR_UP: { mStatusYAxis = FaceStatusYAxis_TooFarUp; } break;
-			case PXC3DScan::ALERT_FACE_Y_TOO_FAR_DOWN: {mStatusYAxis = FaceStatusYAxis_TooFarDown; } break;
-				
-			case PXC3DScan::ALERT_FACE_Z_IN_RANGE: { mStatusZAxis = FaceStatusZAxis_InRange; } break;
-			case PXC3DScan::ALERT_FACE_Z_TOO_CLOSE: { mStatusZAxis = FaceStatusZAxis_TooClose; } break;
-			case PXC3DScan::ALERT_FACE_Z_TOO_FAR: { mStatusZAxis = FaceStatusZAxis_TooFar; } break;
-				
-			case PXC3DScan::ALERT_FACE_YAW_IN_RANGE: { mStatusYaw = FaceStatusYaw_InRange; } break;
-			case PXC3DScan::ALERT_FACE_YAW_TOO_FAR_LEFT: { mStatusYaw = FaceStatusYaw_TooFarLeft; } break;
-			case PXC3DScan::ALERT_FACE_YAW_TOO_FAR_RIGHT: { mStatusYaw = FaceStatusYaw_TooFarRight; } break;
-				
-			case PXC3DScan::ALERT_FACE_PITCH_IN_RANGE: { mStatusPitch = FaceStatusPitch_InRange; } break;
-			case PXC3DScan::ALERT_FACE_PITCH_TOO_FAR_UP: { mStatusPitch = FaceStatusPitch_TooFarUp; } break;
-			case PXC3DScan::ALERT_FACE_PITCH_TOO_FAR_DOWN: { mStatusPitch = FaceStatusPitch_TooFarDown; } break;
+		case PXC3DScan::ALERT_FACE_X_IN_RANGE: { mStatusXAxis = FaceStatusXAxis_InRange; } break;
+		case PXC3DScan::ALERT_FACE_X_TOO_FAR_LEFT: { mStatusXAxis = FaceStatusXAxis_TooFarLeft; } break;
+		case PXC3DScan::ALERT_FACE_X_TOO_FAR_RIGHT: { mStatusXAxis = FaceStatusXAxis_TooFarRight; } break;
+
+		case PXC3DScan::ALERT_FACE_Y_IN_RANGE: { mStatusYAxis = FaceStatusYAxis_InRange; } break;
+		case PXC3DScan::ALERT_FACE_Y_TOO_FAR_UP: { mStatusYAxis = FaceStatusYAxis_TooFarUp; } break;
+		case PXC3DScan::ALERT_FACE_Y_TOO_FAR_DOWN: {mStatusYAxis = FaceStatusYAxis_TooFarDown; } break;
+
+		case PXC3DScan::ALERT_FACE_Z_IN_RANGE: { mStatusZAxis = FaceStatusZAxis_InRange; } break;
+		case PXC3DScan::ALERT_FACE_Z_TOO_CLOSE: { mStatusZAxis = FaceStatusZAxis_TooClose; } break;
+		case PXC3DScan::ALERT_FACE_Z_TOO_FAR: { mStatusZAxis = FaceStatusZAxis_TooFar; } break;
+
+		case PXC3DScan::ALERT_FACE_YAW_IN_RANGE: { mStatusYaw = FaceStatusYaw_InRange; } break;
+		case PXC3DScan::ALERT_FACE_YAW_TOO_FAR_LEFT: { mStatusYaw = FaceStatusYaw_TooFarLeft; } break;
+		case PXC3DScan::ALERT_FACE_YAW_TOO_FAR_RIGHT: { mStatusYaw = FaceStatusYaw_TooFarRight; } break;
+
+		case PXC3DScan::ALERT_FACE_PITCH_IN_RANGE: { mStatusPitch = FaceStatusPitch_InRange; } break;
+		case PXC3DScan::ALERT_FACE_PITCH_TOO_FAR_UP: { mStatusPitch = FaceStatusPitch_TooFarUp; } break;
+		case PXC3DScan::ALERT_FACE_PITCH_TOO_FAR_DOWN: { mStatusPitch = FaceStatusPitch_TooFarDown; } break;
 		}
 	}
 	PXC3DScan::AlertData Data;
@@ -132,7 +133,7 @@ public:
 	FaceStatusPitch GetStatusPitch() { return mStatusPitch; }
 
 private:
-	
+
 	FaceStatusDetected mStatusDetected;
 	FaceStatusXAxis mStatusXAxis;
 	FaceStatusYAxis mStatusYAxis;
@@ -192,8 +193,9 @@ bool FaceScan_Init()
 		SetFaceScanError("Error PXCSenseManager::CreatingInstance");
 		return false;
 	}
+
 	gFaceGlob.SenseManager = sm;
-	
+
 	status = sm->Enable3DScan();
 	if (status != PXC_STATUS_NO_ERROR)
 	{
@@ -201,31 +203,23 @@ bool FaceScan_Init()
 		FaceScan_Shutdown();
 		return false;
 	}
-	
-	PXC3DScan *fs = sm->Query3DScan();
 
-	status = sm->EnableStream(PXCCapture::STREAM_TYPE_COLOR, 1280, 720, 30.0f);
+
+	status = sm->Init(); //init has to happen before scan configuration.
 	if (status != PXC_STATUS_NO_ERROR)
 	{
-		SetFaceScanError("Error EnableStream Color %d", status);
-		FaceScan_Shutdown();
-		return false;
-	}
-
-	status = sm->EnableStream(PXCCapture::STREAM_TYPE_DEPTH, 640, 480, 30.0f);
-	if (status != PXC_STATUS_NO_ERROR)
-	{
-		SetFaceScanError("Error EnableStream Depth %d", status);
+		SetFaceScanError("SenseManager::Init %d", status);
 		FaceScan_Shutdown();
 		return false;
 	}
 
 	gFaceGlob.ScanConfig.startScan = false;
 	gFaceGlob.ScanConfig.mode = PXC3DScan::ScanningMode::FACE;
-	gFaceGlob.ScanConfig.options = PXC3DScan::ReconstructionOption::TEXTURE;
-	gFaceGlob.ScanConfig.options = gFaceGlob.ScanConfig.options | PXC3DScan::ReconstructionOption::LANDMARKS;
+	gFaceGlob.ScanConfig.options = PXC3DScan::ReconstructionOption::TEXTURE | PXC3DScan::ReconstructionOption::LANDMARKS;
+	gFaceGlob.ScanConfig.useMarker = false;
 	gFaceGlob.ScanConfig.maxTriangles = 0;
 
+	PXC3DScan *fs = sm->Query3DScan();
 	status = fs->SetConfiguration(gFaceGlob.ScanConfig);
 	if (status != PXC_STATUS_NO_ERROR)
 	{
@@ -236,14 +230,7 @@ bool FaceScan_Init()
 
 	fs->Subscribe(&gAlertHandler);
 	gFaceGlob.FaceScan = fs;
-	
-	status = sm->Init();
-	if (status != PXC_STATUS_NO_ERROR)
-	{
-		SetFaceScanError("SenseManager::Init %d", status);
-		FaceScan_Shutdown();
-		return false;
-	}
+
 	return true;
 }
 
@@ -265,7 +252,7 @@ bool FaceScan_FrameAcquire()
 	pxcStatus acquireStatus = gFaceGlob.SenseManager->AcquireFrame(false);
 
 	gFaceGlob.ScanningInProgress = gFaceGlob.FaceScan->IsScanning() != 0;
-	
+
 	gFaceGlob.FrameAcquired = acquireStatus >= pxcStatus::PXC_STATUS_NO_ERROR;
 	return gFaceGlob.FrameAcquired;
 }
@@ -314,16 +301,13 @@ void FaceScan_SaveScan(const char *filename)
 {
 	wchar_t  ws[256];
 	swprintf(ws, 256, L"%hs", filename);
-	gFaceGlob.FaceScan->Reconstruct(PXC3DScan::FileFormat::OBJ, ws);
+	pxcStatus status = gFaceGlob.FaceScan->Reconstruct(PXC3DScan::FileFormat::OBJ, ws);
+	//TODO: couldn't reconstruct scan if status != PXC_STATUS_NO_ERROR, propose to retry.
 }
 
 void FaceScan_StartScan()
 {
 	gFaceGlob.ScanConfig.startScan = true;
-	gFaceGlob.ScanConfig.mode = PXC3DScan::ScanningMode::FACE;
-	gFaceGlob.ScanConfig.options = PXC3DScan::ReconstructionOption::TEXTURE;
-	gFaceGlob.ScanConfig.options = gFaceGlob.ScanConfig.options | PXC3DScan::ReconstructionOption::LANDMARKS;
-	gFaceGlob.ScanConfig.maxTriangles = 0;
 	gFaceGlob.FaceScan->SetConfiguration(gFaceGlob.ScanConfig);
 }
 
