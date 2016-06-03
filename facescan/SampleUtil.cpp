@@ -349,16 +349,18 @@ void CopyOBJDataToSoftwareMesh(tObjModel *objModel, CPUTSoftwareMesh *softwareMe
 	softwareMesh->AddComponent(eSMComponent_Normal);
 	softwareMesh->AddComponent(eSMComponent_Tex1);
 
-	if (sizeof(ObjIndexInt) == sizeof(uint32))
+	if (sizeof(ObjIndexInt) == sizeof(uint32) && softwareMesh->IB != NULL)
 		memcpy(softwareMesh->IB, &objModel->m_indices[0], sizeof(uint32) * indexCount);
 
 	
-	tVertex *srcV = &objModel->m_vertices[0];
-	for (int i = 0; i < vertexCount; i++)
-	{
-		softwareMesh->Pos[i] = float3(srcV->x, srcV->y, srcV->z);
-		softwareMesh->Normal[i] = float3(srcV->nx, srcV->ny, srcV->nz);
-		softwareMesh->Tex[i] = float2(srcV->u, srcV->v);
-		srcV++;
+	if (vertexCount > 0){
+		tVertex *srcV = &objModel->m_vertices[0];
+		for (int i = 0; i < vertexCount; i++)
+		{
+			softwareMesh->Pos[i] = float3(srcV->x, srcV->y, srcV->z);
+			softwareMesh->Normal[i] = float3(srcV->nx, srcV->ny, srcV->nz);
+			softwareMesh->Tex[i] = float2(srcV->u, srcV->v);
+			srcV++;
+		}
 	}
 }

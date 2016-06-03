@@ -296,9 +296,9 @@ void Menu_LandmarkEdit::SetInput(std::vector<float3> *faceCurrentLandmarks, std:
 	mFaceModel = faceModel;
 	if (headModel != NULL)
 	{
-		SAFE_RELEASE(mCPUTHeadModel);
 		headModel = mCPUTHeadModel;
 		headModel->AddRef();
+		SAFE_RELEASE(mCPUTHeadModel);
 	}
 	
 	SAFE_RELEASE(mCPUTFaceModel);

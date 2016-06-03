@@ -204,6 +204,13 @@ bool FaceScan_Init()
 		return false;
 	}
 
+	status = sm->EnableStream(PXCCapture::STREAM_TYPE_COLOR, 1920, 1080, 30.0f);
+	if (status != PXC_STATUS_NO_ERROR)
+	{
+		SetFaceScanError("Error EnableStream Color %d", status);
+		FaceScan_Shutdown();
+		return false;
+	}
 
 	status = sm->Init(); //init has to happen before scan configuration.
 	if (status != PXC_STATUS_NO_ERROR)

@@ -18,8 +18,8 @@
 
 #include <D3D11.h>
 #include <string>
+
 #include "cput.h"
-#include "CPUT.h"
 
 struct tObjModel;
 class CPUTSoftwareMesh;

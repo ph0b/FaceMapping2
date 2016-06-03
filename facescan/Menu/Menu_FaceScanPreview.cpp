@@ -39,9 +39,9 @@ Menu_FaceScanPreview::Menu_FaceScanPreview()
 	mMode = FaceScanPreviewMode_ApproveScan;
 	displayModel = NULL;
 	cameraController = new CPUTCameraModelViewer();
-	cameraController->SetTarget(float3(0,0,0));
+	cameraController->SetTarget(float3(0, 0, 0));
 	cameraController->SetDistance(10, 3, 20);
-	cameraController->SetViewAngles(0,0);
+	cameraController->SetViewAngles(0, 0);
 }
 
 Menu_FaceScanPreview::~Menu_FaceScanPreview()
@@ -120,10 +120,9 @@ void Menu_FaceScanPreview::HandleCPUTEvent(int eventID, int controlID, CPUTContr
 			if (TRUE == GetSaveFileNameA(&ofn))
 			{
 				FaceScan_MoveScanData(mModelFilename.c_str(), ofnFilename);
+				gMenu_FaceMapping->LoadFace(ofnFilename);
+				MenuController_PushMenu(gMenu_FaceMapping, true);
 			}
-
-			gMenu_FaceMapping->LoadFace(ofnFilename);
-			MenuController_PushMenu(gMenu_FaceMapping, true);
 		} break;
 		case MainMenuIds_Back:
 		{
@@ -143,7 +142,7 @@ void Menu_FaceScanPreview::Update(float dt)
 	cameraController->Update(dt);
 }
 
-void Menu_FaceScanPreview::Render( CPUTRenderParameters &renderParams )
+void Menu_FaceScanPreview::Render(CPUTRenderParameters &renderParams)
 {
 	renderParams.mpCamera = (CPUTCamera*)cameraController->GetCamera();
 	if (displayModel != NULL)
@@ -152,7 +151,7 @@ void Menu_FaceScanPreview::Render( CPUTRenderParameters &renderParams )
 
 		if (mLandmarkCheckbox->GetCheckboxState() == CPUT_CHECKBOX_CHECKED)
 		{
-			for (auto it = mFaceModel.Landmarks.begin(); it != mFaceModel.Landmarks.end(); it++) 
+			for (auto it = mFaceModel.Landmarks.begin(); it != mFaceModel.Landmarks.end(); it++)
 			{
 				CPUTColor4 color = CPUTColor4(1.0f, 1.0f, 0.0f, 1.0f);
 				DrawCube(renderParams, *it, 0.1f, color);
@@ -161,17 +160,17 @@ void Menu_FaceScanPreview::Render( CPUTRenderParameters &renderParams )
 	}
 }
 
-void Menu_FaceScanPreview::LoadFaceObj( std::string filename, bool absoluteFilename, bool forceReload )
+void Menu_FaceScanPreview::LoadFaceObj(std::string filename, bool absoluteFilename, bool forceReload)
 {
 	ProfileBlockScoped block("Load OBJ");
 	if (!absoluteFilename)
 	{
-		CPUTFileSystem::CombinePath(GetUserDataDirectory(), filename, &filename );
+		CPUTFileSystem::CombinePath(GetUserDataDirectory(), filename, &filename);
 	}
 
 	if (filename == mModelFilename && !forceReload)
 		return;
-	
+
 	mFaceModel.LoadObjFilename(filename);
 	mModelFilename = filename;
 
