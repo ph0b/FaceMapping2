@@ -225,6 +225,9 @@
     <ClInclude Include="..\..\..\CPUT\include\windows\ThrowHResult.h">
       <Filter>CPUT</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\CPUT\include\windows\CPUTQtWindowWin.h">
+      <Filter>CPUT</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\CPUT\middleware\stb\stb_image.c">
@@ -393,6 +396,9 @@
       <Filter>CPUT</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\CPUT\source\CPUTSoftwareMesh.cpp">
+      <Filter>CPUT</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\CPUT\source\windows\CPUTQtWindowWin.cpp">
       <Filter>CPUT</Filter>
     </ClCompile>
   </ItemGroup>

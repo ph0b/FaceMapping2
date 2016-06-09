@@ -57,7 +57,7 @@ void MySample::Create()
     CreateResources();
 
 	ImGui_ImplDX11_Init(GetHWnd(), GetDevice(), GetContext());
-	CPUTWindowWin::SetWinProcOverride(MySample_WndProcCallback);
+	CPUTQtWindowWin::RegisterWndProc(MySample_WndProcCallback);
 	
     
 	int windowWidth, windowHeight;

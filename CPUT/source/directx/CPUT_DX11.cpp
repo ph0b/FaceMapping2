@@ -17,6 +17,7 @@
 #include "CPUTRenderStateBlockDX11.h"
 #include "CPUTBufferDX11.h"
 #include "CPUTTextureDX11.h"
+#include "CPUTQtWindowWin.h"
 
 // static initializers
 ID3D11Device* CPUT_DX11::mpD3dDevice = NULL;
@@ -113,7 +114,7 @@ CPUTResult CPUT_DX11::MakeWindow(const std::string WindowTitle, CPUTWindowCreati
     HEAPCHECK;
 
     // create the OS window
-    mpWindow = new CPUTWindowWin();
+    mpWindow = new CPUTQtWindowWin();
 
     result = mpWindow->Create(WindowTitle, windowParams);
     
