@@ -41,7 +41,6 @@
     <ClCompile Include="..\..\Facemap\CHeadGeometryStage.cpp">
       <Filter>Facemap</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\CFaceModel.cpp" />
     <ClCompile Include="..\..\Facemap\CHeadBlendStage.cpp">
       <Filter>Facemap</Filter>
     </ClCompile>
@@ -55,6 +54,9 @@
     <ClCompile Include="..\..\OBJExporter.cpp" />
     <ClCompile Include="..\..\Facemap\CHairGeometryStage.cpp">
       <Filter>Facemap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CFaceModel.cpp">
+      <Filter>Menu</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

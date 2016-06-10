@@ -20,7 +20,7 @@
 #include "DXGIDebug.h"
 
 // include base headers we'll need
-#include "CPUTWindowWin.h"
+#include "CPUTQtWindowWin.h"
 #include "CPUT.h"
 #include "CPUTMath.h"
 #include "CPUTEventHandler.h"
@@ -55,7 +55,7 @@ public:
 
 protected:
     bool                       mbShutdown;
-    CPUTWindowWin             *mpWindow;
+    CPUTQtWindowWin             *mpWindow;
     D3D_DRIVER_TYPE            mdriverType;
     D3D_FEATURE_LEVEL          mfeatureLevel; // potentially not accurate. 
     IDXGISwapChain            *mpSwapChain;
