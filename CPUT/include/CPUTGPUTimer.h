@@ -21,12 +21,12 @@ class CPUTGPUTimer
 public:
     virtual void   Start()     = 0;
     virtual void   Stop()      = 0;
-    virtual        ~CPUTGPUTimer() {};
+    virtual        ~CPUTGPUTimer() {}
 
 	static CPUTGPUTimer *Create(  );
 
 protected:
-	CPUTGPUTimer();
+    CPUTGPUTimer() {}
 };
 
 #endif // CPUTGPUTIMER_H

@@ -53,12 +53,12 @@ namespace cput {
 #endif
 		}
 		return hr;
-	}
+    }
 
 	inline HRESULT display_error(hresult_exception const &bang, tstring const& title = tstring()) {
 		::MessageBox(0, bang.message().c_str(), title.c_str(), 0);
 		return bang.result();
-	}
+    }
 };
 
 #define ThrowHResult(hr_) cput::throw_hr((__FILE__), __LINE__, hr_, _T(#hr_))

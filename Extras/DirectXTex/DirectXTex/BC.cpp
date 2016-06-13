@@ -21,9 +21,7 @@
 
 #include "BC.h"
 
-#ifndef USE_XNAMATH
 using namespace DirectX::PackedVector;
-#endif
 
 namespace DirectX
 {
@@ -258,7 +256,7 @@ static void OptimizeRGB(_Out_ HDRColorA *pX, _Out_ HDRColorA *pY,
             size_t iStep;
             if(fDot <= 0.0f)
                 iStep = 0;
-            if(fDot >= fSteps)
+            else if(fDot >= fSteps)
                 iStep = cSteps - 1;
             else
                 iStep = static_cast<size_t>(fDot + 0.5f);
@@ -370,7 +368,6 @@ inline static void DecodeBC1( _Out_writes_(NUM_PIXELS_PER_BLOCK) XMVECTOR *pColo
 
 
 //-------------------------------------------------------------------------------------
-#pragma warning(disable: 4616 6001 6201)
 
 static void EncodeBC1(_Out_ D3DX_BC1 *pBC, _In_reads_(NUM_PIXELS_PER_BLOCK) const HDRColorA *pColor,
                       _In_ bool bColorKey, _In_ float alphaRef, _In_ DWORD flags)
@@ -724,7 +721,7 @@ static void EncodeSolidBC1(_Out_ D3DX_BC1 *pBC, _In_reads_(NUM_PIXELS_PER_BLOCK)
 _Use_decl_annotations_
 void D3DXDecodeBC1(XMVECTOR *pColor, const uint8_t *pBC)
 {
-    const D3DX_BC1 *pBC1 = reinterpret_cast<const D3DX_BC1 *>(pBC);
+    auto pBC1 = reinterpret_cast<const D3DX_BC1 *>(pBC);
     DecodeBC1( pColor, pBC1, true );
 }
 
@@ -785,7 +782,7 @@ void D3DXEncodeBC1(uint8_t *pBC, const XMVECTOR *pColor, float alphaRef, DWORD f
         }
     }
 
-    D3DX_BC1 *pBC1 = reinterpret_cast<D3DX_BC1 *>(pBC);
+    auto pBC1 = reinterpret_cast<D3DX_BC1 *>(pBC);
     EncodeBC1(pBC1, Color, true, alphaRef, flags);
 }
 
@@ -799,7 +796,7 @@ void D3DXDecodeBC2(XMVECTOR *pColor, const uint8_t *pBC)
     assert( pColor && pBC );
     static_assert( sizeof(D3DX_BC2) == 16, "D3DX_BC2 should be 16 bytes" );
 
-    const D3DX_BC2 *pBC2 = reinterpret_cast<const D3DX_BC2 *>(pBC);
+    auto pBC2 = reinterpret_cast<const D3DX_BC2 *>(pBC);
 
     // RGB part
     DecodeBC1(pColor, &pBC2->bc1, false);
@@ -808,7 +805,10 @@ void D3DXDecodeBC2(XMVECTOR *pColor, const uint8_t *pBC)
     DWORD dw = pBC2->bitmap[0];
 
     for(size_t i = 0; i < 8; ++i, dw >>= 4)
+    {
+        #pragma prefast(suppress:22103, "writing blocks in two halves confuses tool")
         pColor[i] = XMVectorSetW( pColor[i], (float) (dw & 0xf) * (1.0f / 15.0f) );
+    }
 
     dw = pBC2->bitmap[1];
 
@@ -828,7 +828,7 @@ void D3DXEncodeBC2(uint8_t *pBC, const XMVECTOR *pColor, DWORD flags)
         XMStoreFloat4( reinterpret_cast<XMFLOAT4*>( &Color[i] ), pColor[i] );
     }
 
-    D3DX_BC2 *pBC2 = reinterpret_cast<D3DX_BC2 *>(pBC);
+    auto pBC2 = reinterpret_cast<D3DX_BC2 *>(pBC);
 
     // 4-bit alpha part.  Dithered using Floyd Stienberg error diffusion.
     pBC2->bitmap[0] = 0;
@@ -899,7 +899,7 @@ void D3DXDecodeBC3(XMVECTOR *pColor, const uint8_t *pBC)
     assert( pColor && pBC );
     static_assert( sizeof(D3DX_BC3) == 16, "D3DX_BC3 should be 16 bytes" );
 
-    const D3DX_BC3 *pBC3 = reinterpret_cast<const D3DX_BC3 *>(pBC);
+    auto pBC3 = reinterpret_cast<const D3DX_BC3 *>(pBC);
 
     // RGB part
     DecodeBC1(pColor, &pBC3->bc1, false);
@@ -947,7 +947,7 @@ void D3DXEncodeBC3(uint8_t *pBC, const XMVECTOR *pColor, DWORD flags)
         XMStoreFloat4( reinterpret_cast<XMFLOAT4*>( &Color[i] ), pColor[i] );
     }
 
-    D3DX_BC3 *pBC3 = reinterpret_cast<D3DX_BC3 *>(pBC);
+    auto pBC3 = reinterpret_cast<D3DX_BC3 *>(pBC);
 
     // Quantize block to A8, using Floyd Stienberg error diffusion.  This 
     // increases the chance that colors will map directly to the quantized 

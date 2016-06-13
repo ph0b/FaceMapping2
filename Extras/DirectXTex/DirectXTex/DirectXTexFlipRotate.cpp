@@ -15,6 +15,8 @@
 
 #include "directxtexp.h"
 
+using Microsoft::WRL::ComPtr;
+
 namespace DirectX
 {
 
@@ -29,19 +31,20 @@ static HRESULT _PerformFlipRotateUsingWIC( _In_ const Image& srcImage, _In_ DWOR
 
     assert( srcImage.format == destImage.format );
 
-    IWICImagingFactory* pWIC = _GetWIC();
+    bool iswic2 = false;
+    IWICImagingFactory* pWIC = GetWICFactory(iswic2);
     if ( !pWIC )
         return E_NOINTERFACE;
 
-    ScopedObject<IWICBitmap> source;
+    ComPtr<IWICBitmap> source;
     HRESULT hr = pWIC->CreateBitmapFromMemory( static_cast<UINT>( srcImage.width ), static_cast<UINT>( srcImage.height ), pfGUID,
                                                static_cast<UINT>( srcImage.rowPitch ), static_cast<UINT>( srcImage.slicePitch ),
-                                               srcImage.pixels, &source );
+                                               srcImage.pixels, source.GetAddressOf() );
     if ( FAILED(hr) )
         return hr;
 
-    ScopedObject<IWICBitmapFlipRotator> FR;
-    hr = pWIC->CreateBitmapFlipRotator( &FR );
+    ComPtr<IWICBitmapFlipRotator> FR;
+    hr = pWIC->CreateBitmapFlipRotator( FR.GetAddressOf() );
     if ( FAILED(hr) )
         return hr;
 
@@ -135,7 +138,7 @@ HRESULT FlipRotate( const Image& srcImage, DWORD flags, ScratchImage& image )
     if ( !flags )
         return E_INVALIDARG;
 
-#ifdef _AMD64_
+#ifdef _M_X64
     if ( (srcImage.width > 0xFFFFFFFF) || (srcImage.height > 0xFFFFFFFF) )
         return E_INVALIDARG;
 #endif
@@ -280,7 +283,7 @@ HRESULT FlipRotate( const Image* srcImages, size_t nimages, const TexMetadata& m
             return E_FAIL;
         }
 
-#ifdef _AMD64_
+#ifdef _M_X64
         if ( (src.width > 0xFFFFFFFF) || (src.height > 0xFFFFFFFF) )
             return E_FAIL;
 #endif

@@ -14,6 +14,7 @@
 // responsibility to update it.
 //--------------------------------------------------------------------------------------
 
+#include <QDebug>
 #include "SampleStart.h"
 #include "CPUTMaterial.h"
 #include "CPUTLight.h"
@@ -329,7 +330,7 @@ void MySample::CreateResources()
     std::string mediaDirectory;
 
     CPUTFileSystem::GetExecutableDirectory(&executableDirectory);
-    CPUTFileSystem::ResolveAbsolutePathAndFilename(executableDirectory + "../../../../Media/", &mediaDirectory);
+    CPUTFileSystem::ResolveAbsolutePathAndFilename(executableDirectory + "Media/", &mediaDirectory);
     
 	pAssetLibrary->SetMediaDirectoryName(mediaDirectory + "gui_assets/");
     pAssetLibrary->SetSystemDirectoryName(mediaDirectory + "System/");

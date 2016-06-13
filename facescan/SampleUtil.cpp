@@ -62,7 +62,6 @@ void SampleUtil_Init()
 {
 	std::string dir;
 	CPUTFileSystem::GetExecutableDirectory(&dir);
-	CPUTFileSystem::StripDirectoriesFromPath(&dir, 4);
 	CPUTFileSystem::CombinePath(dir, "Media\\MyAssets", &gUtilGlob.myAssetsDirectory);
 	CPUTFileSystem::CombinePath(dir, "userdata", &gUtilGlob.userDataDirectory);
 

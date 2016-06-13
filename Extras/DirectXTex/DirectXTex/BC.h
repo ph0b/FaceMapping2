@@ -13,34 +13,14 @@
 // http://go.microsoft.com/fwlink/?LinkId=248926
 //-------------------------------------------------------------------------------------
 
-#if defined(_MSC_VER) && (_MSC_VER > 1000)
 #pragma once
-#endif
 
 #include <assert.h>
-
-#ifdef USE_XNAMATH
-#include <xnamath.h>
-#else
 #include <directxmath.h>
 #include <directxpackedvector.h>
-#endif
-
-#include <float.h>
-
-#pragma warning(push)
-#pragma warning(disable : 4005)
-#include <stdint.h>
-#pragma warning(pop)
 
 namespace DirectX
 {
-
-#ifndef USE_XNAMATH
-typedef PackedVector::HALF HALF;
-typedef PackedVector::XMHALF4 XMHALF4;
-typedef PackedVector::XMU565 XMU565;
-#endif
 
 //-------------------------------------------------------------------------------------
 // Constants
@@ -50,7 +30,7 @@ const uint16_t F16S_MASK    = 0x8000;   // f16 sign mask
 const uint16_t F16EM_MASK   = 0x7fff;   // f16 exp & mantissa mask
 const uint16_t F16MAX       = 0x7bff;   // MAXFLT bit pattern for XMHALF
 
-#define    SIGN_EXTEND(x,nb) ((((x)&(1<<((nb)-1)))?((~0)<<(nb)):0)|(x))
+#define SIGN_EXTEND(x,nb) ((((x)&(1<<((nb)-1)))?((~0)<<(nb)):0)|(x))
 
 // Because these are used in SAL annotations, they need to remain macros rather than const values
 #define NUM_PIXELS_PER_BLOCK 16
@@ -65,9 +45,9 @@ const size_t BC6H_MAX_SHAPES = 32;
 const size_t BC7_NUM_CHANNELS = 4;
 const size_t BC7_MAX_SHAPES = 64;
 
-const uint32_t BC67_WEIGHT_MAX = 64;
+const int32_t BC67_WEIGHT_MAX = 64;
 const uint32_t BC67_WEIGHT_SHIFT = 6;
-const uint32_t BC67_WEIGHT_ROUND = 32;
+const int32_t BC67_WEIGHT_ROUND = 32;
 
 extern const int g_aWeights2[4];
 extern const int g_aWeights3[8];
@@ -79,6 +59,7 @@ enum BC_FLAGS
     BC_FLAGS_DITHER_RGB = 0x10000,  // Enables dithering for RGB colors for BC1-3
     BC_FLAGS_DITHER_A   = 0x20000,  // Enables dithering for Alpha channel for BC1-3
     BC_FLAGS_UNIFORM    = 0x40000,  // By default, uses perceptual weighting for BC1-3; this flag makes it a uniform weighting
+    BC_FLAGS_USE_3SUBSETS = 0x80000,// By default, BC7 skips mode 0 & 2; this flag adds those modes back
 };
 
 //-------------------------------------------------------------------------------------
@@ -91,7 +72,7 @@ class LDRColorA
 public:
     uint8_t r, g, b, a;
 
-    LDRColorA() {}
+    LDRColorA() DIRECTX_CTOR_DEFAULT
     LDRColorA(uint8_t _r, uint8_t _g, uint8_t _b, uint8_t _a) : r(_r), g(_g), b(_b), a(_a) {}
 
     const uint8_t& operator [] (_In_range_(0,3) size_t uElement) const
@@ -155,13 +136,15 @@ public:
     }
 };
 
+static_assert( sizeof(LDRColorA) == 4, "Unexpected packing");
+
 class HDRColorA
 {
 public:
     float r, g, b, a;
 
 public:
-    HDRColorA() {}
+    HDRColorA() DIRECTX_CTOR_DEFAULT
     HDRColorA(float _r, float _g, float _b, float _a) : r(_r), g(_g), b(_b), a(_a) {}
     HDRColorA(const HDRColorA& c) : r(c.r), g(c.g), b(c.b), a(c.a) {}
     HDRColorA(const LDRColorA& c)
@@ -322,9 +305,10 @@ class INTColor
 {
 public:
     int r, g, b;
+    int pad;
 
 public:
-    INTColor() {}
+    INTColor() DIRECTX_CTOR_DEFAULT
     INTColor(int nr, int ng, int nb) {r = nr; g = ng; b = nb;}
     INTColor(const INTColor& c) {r = c.r; g = c.g; b = c.b;}
 
@@ -366,7 +350,7 @@ public:
 
     void Set(_In_ const HDRColorA& c, _In_ bool bSigned)
     {
-        XMHALF4 aF16;
+        PackedVector::XMHALF4 aF16;
 
         XMVECTOR v = XMLoadFloat4( (const XMFLOAT4*)& c );
         XMStoreHalf4( &aF16, v );
@@ -392,7 +376,7 @@ public:
         return *this;
     }
 
-    void ToF16(_Out_writes_(3) HALF aF16[3], _In_ bool bSigned) const
+    void ToF16(_Out_writes_(3) PackedVector::HALF aF16[3], _In_ bool bSigned) const
     {
         aF16[0] = INT2F16(r, bSigned);
         aF16[1] = INT2F16(g, bSigned);
@@ -400,7 +384,7 @@ public:
     }
 
 private:
-    static int F16ToINT(_In_ const HALF& f, _In_ bool bSigned)
+    static int F16ToINT(_In_ const PackedVector::HALF& f, _In_ bool bSigned)
     {
         uint16_t input = *((const uint16_t*) &f);
         int out, s;
@@ -420,9 +404,9 @@ private:
         return out;
     }
 
-    static HALF INT2F16(_In_ int input, _In_ bool bSigned)
+    static PackedVector::HALF INT2F16(_In_ int input, _In_ bool bSigned)
     {
-        HALF h;
+        PackedVector::HALF h;
         uint16_t out;
         if(bSigned)
         {
@@ -444,6 +428,8 @@ private:
         return h;
     }
 };
+
+static_assert( sizeof(INTColor) == 16, "Unexpected packing");
 
 struct INTEndPntPair
 {
@@ -529,9 +515,6 @@ private:
     uint8_t m_uBits[ SizeInBytes ];
 };
 
-#pragma warning(push)
-#pragma warning(disable : 4127 4480 4512)
-
 // BC6H compression (16 bits per texel)
 class D3DX_BC6H : private CBits< 16 >
 {
@@ -540,6 +523,8 @@ public:
     void Encode(_In_ bool bSigned, _In_reads_(NUM_PIXELS_PER_BLOCK) const HDRColorA* const pIn);
 
 private:
+#pragma warning(push)
+#pragma warning(disable : 4480)
     enum EField : uint8_t
     {
         NA, // N/A
@@ -558,6 +543,7 @@ private:
         BY,
         BZ,
     };
+#pragma warning(pop)
 
     struct ModeDescriptor
     {
@@ -574,6 +560,8 @@ private:
         LDRColorA RGBAPrec[BC6H_MAX_REGIONS][2];
     };
 
+#pragma warning(push)
+#pragma warning(disable : 4512)
     struct EncodeParams
     {
         float fBestErr;
@@ -593,6 +581,7 @@ private:
             }
         }
     };
+#pragma warning(pop)
 
     static int Quantize(_In_ int iValue, _In_ int prec, _In_ bool bSigned);
     static int Unquantize(_In_ int comp, _In_ uint8_t uBitsPerComp, _In_ bool bSigned);
@@ -609,7 +598,7 @@ private:
                      _In_ const INTEndPntPair &aOrgEndPts, _Out_ INTEndPntPair &aOptEndPts) const;
     void OptimizeEndPoints(_In_ const EncodeParams* pEP, _In_reads_(BC6H_MAX_REGIONS) const float aOrgErr[],
                            _In_reads_(BC6H_MAX_REGIONS) const INTEndPntPair aOrgEndPts[],
-                           _Inout_updates_all_(BC6H_MAX_REGIONS) INTEndPntPair aOptEndPts[]) const;
+                           _Out_writes_all_(BC6H_MAX_REGIONS) INTEndPntPair aOptEndPts[]) const;
     static void SwapIndices(_In_ const EncodeParams* pEP, _Inout_updates_all_(BC6H_MAX_REGIONS) INTEndPntPair aEndPts[],
                             _In_reads_(NUM_PIXELS_PER_BLOCK) size_t aIndices[]);
     void AssignIndices(_In_ const EncodeParams* pEP, _In_reads_(BC6H_MAX_REGIONS) const INTEndPntPair aEndPts[],
@@ -635,7 +624,7 @@ class D3DX_BC7 : private CBits< 16 >
 {
 public:
     void Decode(_Out_writes_(NUM_PIXELS_PER_BLOCK) HDRColorA* pOut) const;
-    void Encode(_In_reads_(NUM_PIXELS_PER_BLOCK) const HDRColorA* const pIn);
+    void Encode(bool skip3subsets, _In_reads_(NUM_PIXELS_PER_BLOCK) const HDRColorA* const pIn);
 
 private:
     struct ModeInfo
@@ -651,6 +640,8 @@ private:
         LDRColorA RGBAPrecWithP;
     };
 
+#pragma warning(push)
+#pragma warning(disable : 4512)
     struct EncodeParams
     {
         uint8_t uMode;
@@ -660,6 +651,7 @@ private:
 
         EncodeParams(const HDRColorA* const aOriginal) : aHDRPixels(aOriginal) {}
     };
+#pragma warning(pop)
 
     static uint8_t Quantize(_In_ uint8_t comp, _In_ uint8_t uPrec)
     {
@@ -713,7 +705,7 @@ private:
                            _Out_writes_(BC7_MAX_REGIONS) LDREndPntPair opt_endpts[]) const;
     void AssignIndices(_In_ const EncodeParams* pEP, _In_ size_t uShape, _In_ size_t uIndexMode,
                        _In_reads_(BC7_MAX_REGIONS) LDREndPntPair endpts[],
-                       _Inout_updates_all_(NUM_PIXELS_PER_BLOCK) size_t aIndices[], _Inout_updates_all_(NUM_PIXELS_PER_BLOCK) size_t aIndices2[],
+                       _Out_writes_(NUM_PIXELS_PER_BLOCK) size_t aIndices[], _Out_writes_(NUM_PIXELS_PER_BLOCK) size_t aIndices2[],
                        _Out_writes_(BC7_MAX_REGIONS) float afTotErr[]) const;
     void EmitBlock(_In_ const EncodeParams* pEP, _In_ size_t uShape, _In_ size_t uRotation, _In_ size_t uIndexMode,
                    _In_reads_(BC7_MAX_REGIONS) const LDREndPntPair aEndPts[],
@@ -730,6 +722,8 @@ private:
 };
 
 //-------------------------------------------------------------------------------------
+#pragma warning(push)
+#pragma warning(disable : 4127)
 template <bool bRange> void OptimizeAlpha(float *pX, float *pY, const float *pPoints, size_t cSteps)
 {
     static const float pC6[] = { 5.0f/5.0f, 4.0f/5.0f, 3.0f/5.0f, 2.0f/5.0f, 1.0f/5.0f, 0.0f/5.0f };

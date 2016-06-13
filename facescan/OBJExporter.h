@@ -24,7 +24,7 @@
 #include <codecvt>
 #include <wincodec.h>
 #include <dxgiformat.h>
-#include "../CPUT/middleware/DirectXTex/DirectXTex/DirectXTex.h"
+#include <DirectXTex.h>
 #include <CPUTMath.h>
 #include <CPUTMesh.h>
 #include <vector>

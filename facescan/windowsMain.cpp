@@ -20,8 +20,8 @@
 #include "SampleStart.h"
 
 const std::string WINDOW_TITLE = "FaceScan 2.0";
-const std::string GUI_DIR = "../../../Media/gui_assets/";
-const std::string SYSTEM_DIR = "../../../Media/System/";
+const std::string GUI_DIR = "Media/gui_assets/";
+const std::string SYSTEM_DIR = "Media/System/";
 
 #ifdef _DEBUG
 
