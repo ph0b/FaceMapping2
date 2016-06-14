@@ -56,6 +56,9 @@ int main(int argc, char **argv)
 
     // create an instance of my sample
     MySample *pSample = new MySample();
+	pSample->RegisterMessageLoopCallback([&]() { return pSample->mApplication->exec();});
+
+	pSample->mApplication = new QApplication(argc, argv);
 
     CommandParser mParsedCommandLine;
     mParsedCommandLine.ParseConfigurationOptions(argc, argv, "--");
@@ -72,12 +75,22 @@ int main(int argc, char **argv)
     result = pSample->CPUTCreateWindowAndContext(WINDOW_TITLE, params);
     ASSERT(CPUTSUCCESS(result), "CPUT Error creating window and context.");
     pSample->Create();
+
+
+
+
     returnCode = pSample->CPUTMessageLoop();
+
+
+
     pSample->ReleaseResources();
     pSample->DeviceShutdown();
 
     // cleanup resources
     SAFE_DELETE(pSample);
+
+
+
 
 #if defined CPUT_FOR_DX11 && defined SUPER_DEBUG_DX
     typedef HRESULT(__stdcall *fPtrDXGIGetDebugInterface)(const IID&, void**);

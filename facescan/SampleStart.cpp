@@ -57,7 +57,7 @@ void MySample::Create()
     CreateResources();
 
 	ImGui_ImplDX11_Init(GetHWnd(), GetDevice(), GetContext());
-	CPUTQtWindowWin::RegisterWndProc(MySample_WndProcCallback);
+	static_cast<QDXWidget*>(mpWindow)->RegisterWndProc(MySample_WndProcCallback);
 	
     
 	int windowWidth, windowHeight;
@@ -269,6 +269,10 @@ void MySample::Render(double deltaSeconds)
 void MySample::SetCommandLineArguments(const CommandParser& commandArguments)
 {
     mParsedCommandLine = commandArguments;
+}
+
+void MySample::RegisterMessageLoopCallback( std::function<int()> exec ) {
+	mMessageLoop = exec;
 }
 
 void MySample::ReleaseResources()

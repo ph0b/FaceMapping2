@@ -57,8 +57,9 @@ class MySample : public CPUT_OGL
 public:
 	static MySample *Instance;
 
+ 	QApplication* mApplication;
 private:
-
+	QDXWidget* w;
 	CPUTSprite			*mpFullscreenSprite;
 
     float                  mfElapsedTime;
@@ -68,6 +69,8 @@ private:
     CPUTText              *mpText;
     CommandParser          mParsedCommandLine;
     CPUTRenderTargetDepth *mpShadowRenderTarget;
+
+
 
 public:
     MySample() : 
@@ -100,6 +103,6 @@ public:
 
     void LoadAssets();
     void SetCommandLineArguments(const CommandParser& mParsedCommandLine);
-
+	void RegisterMessageLoopCallback(std::function<int ()> exec );
 };
 #endif // __CPUT_SAMPLESTARTDX11_H__

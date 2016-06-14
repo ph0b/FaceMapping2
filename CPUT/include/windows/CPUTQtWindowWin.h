@@ -1,4 +1,4 @@
-//--------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Copyright 2013 Intel Corporation
 // All Rights Reserved
 //
@@ -12,96 +12,89 @@
 // WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  Intel does not
 // assume any responsibility for any errors which may appear in this software nor any
 // responsibility to update it.
-//--------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 #ifndef __QTWINDOWWIN_H__
 #define __QTWINDOWWIN_H__
-
+// ====================================================================================================================
 #include <QApplication>
-#include <QMainWindow>
+#include <QWidget>
 #include "CPUT.h"
 
-#include "CPUTOSServices.h"
-#include "CPUTResource.h" // win resource.h customized for CPUT
 #include "CPUTWindow.h"
-#include <winuser.h> // for character codes
-#include <string>
-
-// typedef LRESULT (*WinProcHookFunc)(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 class CPUTQtWindowWin;
+class QDXWidget;
 
-class MainWindow : public QMainWindow
+class QDXWidget : public QWidget, public CPUTWindow
 {
 public:
-	explicit MainWindow( CPUTQtWindowWin* parent = 0 );
+	explicit QDXWidget(QWidget *parent = 0);
+    virtual ~QDXWidget();
 
-	~MainWindow() {}
+    virtual bool init();
+    virtual void update();
 
-	QWidget* c;
-private:
-	CPUTQtWindowWin* mCPUTWindow;
 
-};
+	std::vector<std::function<LRESULT(HWND, UINT, WPARAM, LPARAM)>> QDXWidget::mWndProc;
 
-// // OS-specific window class
-// //-----------------------------------------------------------------------------
-class CPUTQtWindowWin : public CPUTWindow {
+	std::vector<std::function<void(int width, int height)>> mResizeEventCallbacks;
+    virtual void RegisterCallbackResizeEvent(std::function<void(int width, int height)> callback) { mResizeEventCallbacks.push_back(callback); }
+
+    void RegisterCallbackKeyboardEvent(std::function<CPUTEventHandledCode(CPUTKey key, CPUTKeyState state)> callback) { mKeyboardEventCallbacks.push_back(callback); }
+	std::vector<std::function<CPUTEventHandledCode(CPUTKey key, CPUTKeyState state)>> mKeyboardEventCallbacks;
+
+    void RegisterCallbackMouseEvent(std::function<CPUTEventHandledCode(int x, int y, int wheel, CPUTMouseState state, CPUTEventID message)> callback) { mMouseEventCallbacks.push_back(callback); }
+	std::vector<std::function<CPUTEventHandledCode(int x, int y, int wheel, CPUTMouseState state, CPUTEventID message)>> mMouseEventCallbacks;
+
+	virtual bool nativeEvent( QByteArray const& eventType, void* message, long* result ) override;
+
+	void resizeEvent( QResizeEvent* event );
+
+
+    void RegisterWndProc(std::function<LRESULT(HWND, UINT, WPARAM, LPARAM)> callback) { mWndProc.push_back(callback); }
+
+
+	CPUTMouseState ConvertMouseState( Qt::MouseButtons buttons, Qt::KeyboardModifiers wParam );
+
+	CPUTKey ConvertVirtualKeyToCPUTKey( int wParam );
+
+	void keyPressEvent(QKeyEvent* event);
+	void keyReleaseEvent(QKeyEvent* event);
+
+	void mouseMoveEvent(QMouseEvent* event);
+
+	void mousePressEvent(QMouseEvent* event);
+
+	void mouseReleaseEvent(QMouseEvent* event);
+
+	void wheelEvent(QWheelEvent* event);
+
+	void CaptureMouse() { grabMouse(); }
+	void ReleaseMouse() { releaseMouse(); }
+
+public slots:
+    void updateNow();
+    void updateLater();
+
+protected:
+    bool m_updatePending;
+
+    bool event(QEvent *event);
+
+    QPaintEngine *paintEngine() const { return 0; }
+    virtual void paintEvent(QPaintEvent *e) { Q_UNUSED(e); }
+
 public:
-    // construction
-    CPUTQtWindowWin();
-    virtual ~CPUTQtWindowWin();
+	CPUTResult Create(const std::string WindowTitle, CPUTWindowCreationParams windowParams) override;
 
-    // Creates a graphics-context friendly window
-    virtual CPUTResult Create(const std::string WindowTitle, CPUTWindowCreationParams windowParams);
 
-    int StartMessageLoop();
+	int StartMessageLoop();
 
-    // return the HWND/Window handle for the created window
-    HWND GetHWnd() {
-		auto widget = mWindow->c;
-		auto id = widget->winId();
-	    return reinterpret_cast<HWND>(id);
-    };
+	void* GetNativeWindowHandle() const override;
+	void GetClientDimensions(int* pWidth, int* pHeight) override;
 
-    // screen/window dimensions
-    void GetClientDimensions( int *pWidth, int *pHeight);
-    void GetClientDimensions( int *pX, int *pY, int *pWidth, int *pHeight);
-    void GetDesktopDimensions(int *pX, int *pY, int *pWidth, int *pHeight);
-    bool IsWindowMaximized();
-    bool IsWindowMinimized();
-    bool DoesWindowHaveFocus();
-    void SetFullscreenState(bool fullscreen);
-    bool GetFullscreenState();
-    void GetWindowDimensions(int *pX, int *pY, int *pWidth, int *pHeight);
 
-	// Mouse capture - 'binds'/releases all mouse input to this window
-    virtual void CaptureMouse();
-    virtual void ReleaseMouse();
-
-    static void RegisterWndProc(std::function<LRESULT(HWND, UINT, WPARAM, LPARAM)> callback) { mWndProc.push_back(callback); }
-
-	static std::vector<std::function<LRESULT(HWND, UINT, WPARAM, LPARAM)>> mWndProc;
-
-    bool                mFullscreen;               // Is in fullscreen mode?
-    RECT                mWindowedRect;
-    int                 mAppClosedReturnCode;      // windows OS return code
-    std::string         mAppTitle;                 // title put at top of window
-
-    static bool         mbMaxMinFullScreen;
-    DWORD               mWindowedStyle;
-	bool WindowCreated = false;
-
-    // Window creation helper functions
-    static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
-    // CPUT conversion helper functions
-    static CPUTMouseState ConvertMouseState(WPARAM wParam);
-    static CPUTKey ConvertVirtualKeyToCPUTKey(WPARAM wParam);
-    static CPUTKey ConvertCharacterToCPUTKey(WPARAM wParam);
-private:
-	QApplication* mApplication;
-	MainWindow* mWindow;
+	void GetClientDimensions( int* pX, int* pY, int* pWidth, int* pHeight ) override;
 };
-
-
-#endif //#ifndef __WINDOWWIN_H__
+// ====================================================================================================================
+#endif

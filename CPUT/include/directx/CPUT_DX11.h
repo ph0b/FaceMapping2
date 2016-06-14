@@ -48,14 +48,14 @@ protected:
 public:
     static ID3D11Device *GetDevice();
     static ID3D11DeviceContext *GetContext() { return mpContext; }
-	HWND GetHWnd() { return mpWindow->GetHWnd(); }
+	HWND GetHWnd() { return reinterpret_cast<HWND>(mpWindow->GetNativeWindowHandle()); }
 	//HINSTANCE GetHInstance() { return mpWindow->GetHInstance(); }
     virtual void CreateResources();
     virtual void ReleaseResources();
-
+	std::function<int() > mMessageLoop;
 protected:
     bool                       mbShutdown;
-    CPUTQtWindowWin             *mpWindow;
+    CPUTWindow                *mpWindow;
     D3D_DRIVER_TYPE            mdriverType;
     D3D_FEATURE_LEVEL          mfeatureLevel; // potentially not accurate. 
     IDXGISwapChain            *mpSwapChain;
