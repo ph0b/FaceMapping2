@@ -114,14 +114,18 @@ CPUTResult CPUT_DX11::MakeWindow(const std::string WindowTitle, CPUTWindowCreati
     HEAPCHECK;
 
     // create the OS window
-    mpWindow = new CPUTQtWindowWin();
+	mpWindow = new QDXWidget();
 
     result = mpWindow->Create(WindowTitle, windowParams);
     
     mpWindow->RegisterLoopEvent([&]() { this->InnerExecutionLoop(); });
+    // mpWindow->RegisterCallbackKeyboardEvent([&](CPUTKey key, CPUTKeyState state) -> CPUTEventHandledCode { return this->CPUTHandleKeyboardEvent(key, state); });
+    // mpWindow->RegisterCallbackMouseEvent([&](int x, int y, int wheel, CPUTMouseState state, CPUTEventID message) -> CPUTEventHandledCode { return this->CPUTHandleMouseEvent(x, y, wheel, state, message); });
+    mpWindow->RegisterCallbackResizeEvent([&](int width, int height) { this->ResizeWindow(width, height); });
+
+
     mpWindow->RegisterCallbackKeyboardEvent([&](CPUTKey key, CPUTKeyState state) -> CPUTEventHandledCode { return this->CPUTHandleKeyboardEvent(key, state); });
     mpWindow->RegisterCallbackMouseEvent([&](int x, int y, int wheel, CPUTMouseState state, CPUTEventID message) -> CPUTEventHandledCode { return this->CPUTHandleMouseEvent(x, y, wheel, state, message); });
-    mpWindow->RegisterCallbackResizeEvent([&](int width, int height) { this->ResizeWindow(width, height); });
  
     HEAPCHECK;
 
@@ -265,7 +269,7 @@ CPUTResult CPUT_DX11::CreateSwapChain(CPUTContextCreation ContextParams)
     CPUTResult result = CPUT_SUCCESS;
 
     RECT rc;
-    HWND hWnd = mpWindow->GetHWnd();
+	HWND hWnd = reinterpret_cast<HWND>(mpWindow->GetNativeWindowHandle());
     GetClientRect(hWnd, &rc);
     UINT width = rc.right - rc.left;
     UINT height = rc.bottom - rc.top;
@@ -445,7 +449,7 @@ CPUTResult CPUT_DX11::CreateContext()
     HRESULT hr;
     CPUTResult result;
     RECT rc;
-    HWND hWnd = mpWindow->GetHWnd();
+	HWND hWnd = reinterpret_cast<HWND>(mpWindow->GetNativeWindowHandle());
 
     GetClientRect( hWnd, &rc );
     UINT width = rc.right - rc.left;
@@ -1001,7 +1005,7 @@ int CPUT_DX11::CPUTMessageLoop()
     D3DPERF_BeginEvent(D3DCOLOR(0xff0000), L"CPUTMessageLoop");
 #endif
 
-    return mpWindow->StartMessageLoop();
+	return mMessageLoop();
 
 #ifdef CPUT_GPA_INSTRUMENTATION
     D3DPERF_EndEvent();
