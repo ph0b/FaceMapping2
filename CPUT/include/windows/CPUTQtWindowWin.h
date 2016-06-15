@@ -85,10 +85,10 @@ protected:
     virtual void paintEvent(QPaintEvent *e) { Q_UNUSED(e); }
 
 public:
-	CPUTResult Create(const std::string WindowTitle, CPUTWindowCreationParams windowParams) override;
+    CPUTResult Create(const std::string WindowTitle, CPUTWindowCreationParams windowParams) override;
 
 
-	int StartMessageLoop();
+    int StartMessageLoop();
 
 	void* GetNativeWindowHandle() const override;
 	void GetClientDimensions(int* pWidth, int* pHeight) override;

@@ -32,7 +32,7 @@
 
 #include "Menu/MenuGlob.h"
 #include "Menu/MenuController.h"
-    
+
 CPUTCamera* GetCamera(CPUTScene* pScene);
 
 std::string GetFilename();
@@ -41,13 +41,13 @@ MySample * MySample::Instance = NULL;
 
 LRESULT MySample_WndProcCallback(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	extern IMGUI_API LRESULT   ImGui_ImplDX11_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	LRESULT r = ImGui_ImplDX11_WndProcHandler(hWnd, msg, wParam, lParam);
-	if (msg == WM_MOUSEWHEEL || msg == WM_MOUSEMOVE)
-		return ImGui::GetIO().WantCaptureMouse ? r : 0;
-	if (msg == WM_KEYDOWN || msg == WM_KEYUP || msg == WM_KEYFIRST)
-		return ImGui::GetIO().WantCaptureKeyboard ? r : 0;
-	return 0;
+    extern IMGUI_API LRESULT   ImGui_ImplDX11_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    LRESULT r = ImGui_ImplDX11_WndProcHandler(hWnd, msg, wParam, lParam);
+    if (msg == WM_MOUSEWHEEL || msg == WM_MOUSEMOVE)
+        return ImGui::GetIO().WantCaptureMouse ? r : 0;
+    if (msg == WM_KEYDOWN || msg == WM_KEYUP || msg == WM_KEYFIRST)
+        return ImGui::GetIO().WantCaptureKeyboard ? r : 0;
+    return 0;
 }
 
 
@@ -57,76 +57,54 @@ void MySample::Create()
 {
     CreateResources();
 
-	ImGui_ImplDX11_Init(GetHWnd(), GetDevice(), GetContext());
-	static_cast<QDXWidget*>(mpWindow)->RegisterWndProc(MySample_WndProcCallback);
-	
+    ImGui_ImplDX11_Init(GetHWnd(), GetDevice(), GetContext());
+    w = static_cast<QDXWidget*>(mpWindow);
+    w->RegisterWndProc(MySample_WndProcCallback);
+
     
-	int windowWidth, windowHeight;
-	mpWindow->GetClientDimensions(&windowWidth, &windowHeight);
+    int windowWidth, windowHeight;
+    mpWindow->GetClientDimensions(&windowWidth, &windowHeight);
 
-	SampleUtil_Init();
-	MenuGlob_Init();
-	MenuGlob_SetScreenDim(windowWidth, windowHeight);
-	MenuController_Init();
-	
-	std::string userDir = GetUserDataDirectory();
-	
+    SampleUtil_Init();
+    MenuGlob_Init();
+    MenuGlob_SetScreenDim(windowWidth, windowHeight);
+    MenuController_Init();
 
-#ifndef DISABLE_RSSDK
-	MenuController_PushMenu(gMenu_Scan);
+    // go directly to the face mapping menu
+    std::string userDir = GetUserDataDirectory();
+    std::string debugFace;
+    CPUTFileSystem::CombinePath(userDir, "joe_sr300_1.obj", &debugFace);
+    gMenu_FaceMapping->LoadFace(debugFace);
+    MenuController_PushMenu(gMenu_FaceMapping);
 
-	// go directly to the face mapping menu
-	//std::string debugFace;
-	//CPUTFileSystem::CombinePath(userDir, "joe.obj", &debugFace);
-	//gMenu_FaceMapping->LoadFace(debugFace);
-	//MenuController_PushMenu(gMenu_FaceMapping);
+    MenuGlob_GUI()->SetActivePanel(MENU_CPUT_PANEL_ID);
 
-	// Go directly to the face scan preview menu
-	//gMenu_FaceScanPreview->LoadFaceObj("", true);
-	//gMenu_FaceScanPreview->SetFaceScanMode( FaceScanPreviewMode_ApproveScan );
-	//MenuController_PushMenu(gMenu_FaceScanPreview);
-	
-#else
-	std::string debugFace;
-	CPUTFileSystem::CombinePath(userDir, "joe_sr300_1.obj", &debugFace);
-	gMenu_FaceMapping->LoadFace( debugFace );
-	MenuController_PushMenu(gMenu_FaceMapping);
+}
 
-	// go directly to the face preview menu
-	//gMenu_FaceScanPreview->LoadFaceObj("", true);
-	//MenuController_PushMenu(gMenu_FaceScanPreview);
-	
-	// go to the edit landmark menu
-	//static CFaceModel faceModel;
-	//faceModel.LoadObjFilename(debugFace);
-	//gMenu_LandmarkEdit->SetInput(&faceModel.Landmarks, &faceModel.Landmarks, NULL, &faceModel);
-	//MenuController_PushMenu(gMenu_LandmarkEdit);
 
-#endif
-
-	MenuGlob_GUI()->SetActivePanel(MENU_CPUT_PANEL_ID);
-
+QWidget& MySample::GetQWidget(){
+    return *w;
 }
 
 void MySample::Shutdown()
 {
-	CPUT_DX11::Shutdown();
-	MenuGlob_Shutdown();
-	SampleUtil_Shutdown();
+    CPUT_DX11::Shutdown();
+    MenuGlob_Shutdown();
+    SampleUtil_Shutdown();
 }
 
 //-----------------------------------------------------------------------------
 void MySample::Update(double deltaSeconds)
 {
-	ImGui_ImplDX11_NewFrame();
-	if (mpWindow->DoesWindowHaveFocus())
-	{
-		mpCameraController->SetCamera(mpCamera);
-		if (mpCameraController)
-			mpCameraController->Update((float)deltaSeconds);
-	}
+    ImGui_ImplDX11_NewFrame();
+    if (mpWindow->DoesWindowHaveFocus())
+    {
+        mpCameraController->SetCamera(mpCamera);
+        if (mpCameraController)
+            mpCameraController->Update((float)deltaSeconds);
+    }
 
-	MenuController_Update((float)deltaSeconds);
+    MenuController_Update((float)deltaSeconds);
 
     CPUTGetGuiController()->ControlModified();
     CPUTGetGuiController()->Update();
@@ -142,26 +120,26 @@ CPUTEventHandledCode MySample::HandleKeyboardEvent(CPUTKey key, CPUTKeyState sta
     CPUTGuiController*  pGUI = CPUTGetGuiController();
 
     switch(key)
-    {   
+    {
     case KEY_ESCAPE:
         handled = CPUT_EVENT_HANDLED;
         PostQuitMessage(0);
         break;
-    
+
     default:
         break;
     }
 
-	if (handled == CPUT_EVENT_UNHANDLED)
-	{
-		handled = MenuController_HandleKeyboardEvent(key, state);
-	}
+    if (handled == CPUT_EVENT_UNHANDLED)
+    {
+        handled = MenuController_HandleKeyboardEvent(key, state);
+    }
 
     // pass it to the camera controller
     if(handled == CPUT_EVENT_UNHANDLED)
     {
         if (mpCameraController)
-        handled = mpCameraController->HandleKeyboardEvent(key, state);
+            handled = mpCameraController->HandleKeyboardEvent(key, state);
     }
     return handled;
 }
@@ -170,14 +148,14 @@ CPUTEventHandledCode MySample::HandleKeyboardEvent(CPUTKey key, CPUTKeyState sta
 //-----------------------------------------------------------------------------
 CPUTEventHandledCode MySample::HandleMouseEvent(int x, int y, int wheel, CPUTMouseState state, CPUTEventID message)
 {
-	CPUTEventHandledCode code = MenuController_HandleMouseEvent( x, y, wheel, state, message );
-	if (code != CPUT_EVENT_HANDLED)
-	{
-		if (mpCameraController)
-		{
-			return mpCameraController->HandleMouseEvent(x, y, wheel, state, message);
-		}
-	}
+    CPUTEventHandledCode code = MenuController_HandleMouseEvent( x, y, wheel, state, message );
+    if (code != CPUT_EVENT_HANDLED)
+    {
+        if (mpCameraController)
+        {
+            return mpCameraController->HandleMouseEvent(x, y, wheel, state, message);
+        }
+    }
     return code;
 }
 
@@ -195,12 +173,12 @@ void MySample::HandleCallbackEvent( CPUTEventID Event, CPUTControlID ControlID, 
     case ID_FULLSCREEN_BUTTON:
         CPUTToggleFullScreenMode();
         break;
-	
+
     default:
         break;
     }
 
-	MenuController_HandleCPUTEvent(Event, ControlID, pControl);
+    MenuController_HandleCPUTEvent(Event, ControlID, pControl);
 }
 
 //-----------------------------------------------------------------------------
@@ -215,11 +193,11 @@ void MySample::ResizeWindow(UINT width, UINT height)
     CPUT_DX11::ResizeWindow( width, height );
 
     // Resize any application-specific render targets here
-    if( mpCamera ) 
+    if( mpCamera )
         mpCamera->SetAspectRatio(((float)width)/((float)height));
     CPUTGetGuiController()->Resize(width, height);
 
-	MenuController_Resize(width, height);
+    MenuController_Resize(width, height);
 }
 
 //-----------------------------------------------------------------------------
@@ -261,24 +239,15 @@ void MySample::Render(double deltaSeconds)
         mpDebugSprite->DrawSprite(renderParams);
     }
 
-	MenuController_Render(renderParams);
-	CPUTDrawGUI();
+    MenuController_Render(renderParams);
+    CPUTDrawGUI();
 
-	ImGui::Render();
-}
-
-void MySample::SetCommandLineArguments(const CommandParser& commandArguments)
-{
-    mParsedCommandLine = commandArguments;
-}
-
-void MySample::RegisterMessageLoopCallback( std::function<int()> exec ) {
-	mMessageLoop = exec;
+    ImGui::Render();
 }
 
 void MySample::ReleaseResources()
 {
-	ImGui_ImplDX11_Shutdown();
+    ImGui_ImplDX11_Shutdown();
 
     // Note: these two are defined in the base.  We release them because we addref them.
     SAFE_RELEASE(mpCamera);
@@ -336,7 +305,7 @@ void MySample::CreateResources()
     CPUTFileSystem::GetExecutableDirectory(&executableDirectory);
     CPUTFileSystem::ResolveAbsolutePathAndFilename(executableDirectory + "Media/", &mediaDirectory);
     
-	pAssetLibrary->SetMediaDirectoryName(mediaDirectory + "gui_assets/");
+    pAssetLibrary->SetMediaDirectoryName(mediaDirectory + "gui_assets/");
     pAssetLibrary->SetSystemDirectoryName(mediaDirectory + "System/");
     pAssetLibrary->SetFontDirectoryName(mediaDirectory + "gui_assets/Font/");
 
@@ -356,9 +325,9 @@ void MySample::CreateResources()
 
     mpCameraController = CPUTCameraControllerFPS::Create();
     mpShadowCamera = CPUTCamera::Create(CPUT_ORTHOGRAPHIC);
-     
+
     pGUI->Resize(width, height);
-	
+
 }
 
 

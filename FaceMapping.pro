@@ -99,10 +99,8 @@ SOURCES +=\
     facescan/Menu/Controls/MenuButton.cpp \
     facescan/Menu/Controls/MenuCanvas.cpp \
     facescan/Menu/Controls/MenuControl.cpp \
-    facescan/Menu/Menu_FaceMapping.cpp \
     facescan/Menu/Menu_FaceScanPreview.cpp \
-    facescan/Menu/Menu_LandmarkEdit.cpp \
-    facescan/Menu/Menu_Scan.cpp \
+    facescan/Menu/Menu_FaceMapping.cpp \
     facescan/Menu/MenuController.cpp \
     facescan/Menu/MenuGlob.cpp \
     facescan/CFaceModel.cpp \
@@ -212,10 +210,8 @@ HEADERS  +=  CPUT/include/android/CPUTTimerLinux.h \
     facescan/Menu/Controls/MenuCanvas.h \
     facescan/Menu/Controls/MenuControl.h \
     facescan/Menu/Controls/MenuTypes.h \
-    facescan/Menu/Menu_FaceMapping.h \
     facescan/Menu/Menu_FaceScanPreview.h \
-    facescan/Menu/Menu_LandmarkEdit.h \
-    facescan/Menu/Menu_Scan.h \
+    facescan/Menu/Menu_FaceMapping.h \
     facescan/Menu/MenuBase.h \
     facescan/Menu/MenuController.h \
     facescan/Menu/MenuGlob.h \

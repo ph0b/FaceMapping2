@@ -29,9 +29,9 @@ const std::string SYSTEM_DIR = "Media/System/";
 #pragma init_seg(compiler)//global objects in this file get constructed very early on
 
 struct CrtBreakAllocSetter {
-	CrtBreakAllocSetter() {
-		//_crtBreakAlloc = 67844;
-	}
+    CrtBreakAllocSetter() {
+        //_crtBreakAlloc = 67844;
+    }
 };
 
 CrtBreakAllocSetter g_crtBreakAllocSetter;
@@ -54,42 +54,22 @@ int main(int argc, char **argv)
     CPUTResult result = CPUT_SUCCESS;
     int returnCode = 0;
 
-	// Initialize COM (needed for WIC)
-	HRESULT hr = S_OK;
-	if (FAILED(hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED)))
-	{
-		wprintf(L"Failed to initialize COM (%08X)\n", hr);
-		return 1;
-	}
+    QApplication a(argc,argv);
 
     // create an instance of my sample
     MySample *pSample = new MySample();
-	pSample->RegisterMessageLoopCallback([&]() { return pSample->mApplication->exec();});
-
-	pSample->mApplication = new QApplication(argc, argv);
-
-    CommandParser mParsedCommandLine;
-    mParsedCommandLine.ParseConfigurationOptions(argc, argv, "--");
-    pSample->SetCommandLineArguments(mParsedCommandLine);
 
     // window and device parameters
     CPUTWindowCreationParams params;
-    params.startFullscreen = mParsedCommandLine.GetParameter("fullscreen");
-    mParsedCommandLine.GetParameter("height",      &(params.windowHeight));
-    mParsedCommandLine.GetParameter("width",       &(params.windowWidth));
-    mParsedCommandLine.GetParameter("xpos",        &(params.windowPositionX));
-    mParsedCommandLine.GetParameter("ypos",        &(params.windowPositionY));
-    mParsedCommandLine.GetParameter("refreshrate", &(params.deviceParams.refreshRate));
     result = pSample->CPUTCreateWindowAndContext(WINDOW_TITLE, params);
     ASSERT(CPUTSUCCESS(result), "CPUT Error creating window and context.");
     pSample->Create();
 
+    QWidget& widget = pSample->GetQWidget();
+    widget.setParent(NULL);
+    widget.show();
 
-
-
-    returnCode = pSample->CPUTMessageLoop();
-
-
+    returnCode = a.exec();
 
     pSample->ReleaseResources();
     pSample->DeviceShutdown();
@@ -97,13 +77,10 @@ int main(int argc, char **argv)
     // cleanup resources
     SAFE_DELETE(pSample);
 
-
-
-
 #if defined CPUT_FOR_DX11 && defined SUPER_DEBUG_DX
     typedef HRESULT(__stdcall *fPtrDXGIGetDebugInterface)(const IID&, void**);
     HMODULE hMod = GetModuleHandle(L"Dxgidebug.dll");
-    fPtrDXGIGetDebugInterface DXGIGetDebugInterface = (fPtrDXGIGetDebugInterface)GetProcAddress(hMod, "DXGIGetDebugInterface"); 
+    fPtrDXGIGetDebugInterface DXGIGetDebugInterface = (fPtrDXGIGetDebugInterface)GetProcAddress(hMod, "DXGIGetDebugInterface");
 
     IDXGIDebug *pDebugInterface;
     DXGIGetDebugInterface(__uuidof(IDXGIDebug), (void**)&pDebugInterface);

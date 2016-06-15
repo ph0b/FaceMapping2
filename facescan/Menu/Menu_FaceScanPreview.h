@@ -25,12 +25,6 @@
 #include "../CFaceModel.h"
 #include <string>
 
-enum FaceScanPreviewMode
-{
-	FaceScanPreviewMode_ApproveScan,
-	FaceScanPReviewMode_ViewScan
-};
-
 class Menu_FaceScanPreview : public MenuBase
 {
 public:
@@ -43,9 +37,7 @@ public:
 	void Update(float dt);
 	void Render(CPUTRenderParameters &renderParams);
 
-	void SetFaceScanMode(FaceScanPreviewMode mode);
-
-	void LoadFaceObj(std::string filename, bool absoluteFilename = false, bool forceReload = false);
+    void LoadFaceObj(std::string filename, bool absoluteFilename = false, bool forceReload = false);
 
 	virtual void HandleCPUTEvent(int eventID, int controlID, CPUTControl *control);
 	virtual CPUTEventHandledCode HandleMouseEvent(int x, int y, int wheel, CPUTMouseState state, CPUTEventID message);
@@ -65,9 +57,7 @@ private:
 
 	CPUTCheckbox *mLandmarkCheckbox;
 
-	FaceScanPreviewMode mMode;
-
-	void MoveUserData(const char *srcObjFilename, const char *dstObjFilename);
+    void MoveUserData(const char *srcObjFilename, const char *dstObjFilename);
 };
 
 

@@ -16,17 +16,13 @@
 #ifndef __MENU_GLOB__
 #define __MENU_GLOB__
 
-#include "Menu_Scan.h"
 #include "Menu_FaceScanPreview.h"
 #include "Menu_FaceMapping.h"
-#include "Menu_LandmarkEdit.h"
 
 #define MENU_CPUT_PANEL_ID 100
 
-extern Menu_Scan *gMenu_Scan;
 extern Menu_FaceScanPreview *gMenu_FaceScanPreview;
 extern Menu_FaceMapping *gMenu_FaceMapping;
-extern Menu_LandmarkEdit *gMenu_LandmarkEdit;
 
 void MenuGlob_Init();
 void MenuGlob_Shutdown();

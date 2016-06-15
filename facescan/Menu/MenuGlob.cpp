@@ -17,39 +17,28 @@
 #include "CPUTGuiControllerDX11.h"
 #include "Menu_FaceScanPreview.h"
 
-
-Menu_Scan *gMenu_Scan;
-Menu_FaceScanPreview *gMenu_FaceScanPreview;
 Menu_FaceMapping *gMenu_FaceMapping;
-Menu_LandmarkEdit *gMenu_LandmarkEdit;
+Menu_FaceScanPreview *gMenu_FaceScanPreview;
 
 static int gScreenWidth = 0;
 static int gScreenHeight = 0;
 
 void MenuGlob_Init()
 {
-	gMenu_Scan = new Menu_Scan();
-	gMenu_FaceScanPreview = new Menu_FaceScanPreview();
-	gMenu_FaceMapping = new Menu_FaceMapping();
-	gMenu_LandmarkEdit = new Menu_LandmarkEdit();
+    gMenu_FaceMapping = new Menu_FaceMapping();
+    gMenu_FaceScanPreview = new Menu_FaceScanPreview();
 
-	gMenu_Scan->Init();
-	gMenu_FaceScanPreview->Init();
-	gMenu_FaceMapping->Init();
-	gMenu_LandmarkEdit->Init();
+    gMenu_FaceMapping->Init();
+    gMenu_FaceScanPreview->Init();
 }
 
 void MenuGlob_Shutdown()
 {
-	gMenu_Scan->Shutdown();
-	gMenu_FaceScanPreview->Shutdown();
-	gMenu_FaceMapping->Shutdown();
-	gMenu_LandmarkEdit->Shutdown();
+    gMenu_FaceMapping->Shutdown();
+    gMenu_FaceScanPreview->Shutdown();
 
-	SAFE_DELETE(gMenu_Scan);
-	SAFE_DELETE(gMenu_FaceScanPreview);
-	SAFE_DELETE(gMenu_FaceMapping);
-	SAFE_DELETE(gMenu_LandmarkEdit);
+    SAFE_DELETE(gMenu_FaceMapping);
+    SAFE_DELETE(gMenu_FaceScanPreview);
 }
 
 CPUTGuiController *MenuGlob_GUI()

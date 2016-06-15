@@ -376,28 +376,6 @@ void* QDXWidget::GetNativeWindowHandle() const {
 //-----------------------------------------------------------------------------
 CPUTResult QDXWidget::Create(const std::string WindowTitle, CPUTWindowCreationParams windowParams)
 {
-	auto numArgs = 0;
-
-
-    //
-    // Validate that the window starting position is within the virtual desktop
-    //
-    ASSERT((windowParams.windowPositionX == -1) || (windowParams.windowPositionX >= GetSystemMetrics(SM_XVIRTUALSCREEN)), "You are attempting to create a window outside the desktop coordinates.  Check your CPUTWindowCreationParams");
-    ASSERT((windowParams.windowPositionX <= GetSystemMetrics(SM_XVIRTUALSCREEN) + GetSystemMetrics(SM_CXVIRTUALSCREEN)),  "You are attempting to create a window outside the desktop coordinates.  Check your CPUTWindowCreationParams");
-    ASSERT((windowParams.windowPositionY == -1) || (windowParams.windowPositionY >= GetSystemMetrics(SM_YVIRTUALSCREEN)), "You are attempting to create a window outside the desktop coordinates.  Check your CPUTWindowCreationParams");
-    ASSERT((windowParams.windowPositionY <= GetSystemMetrics(SM_YVIRTUALSCREEN) + GetSystemMetrics(SM_CYVIRTUALSCREEN)),  "You are attempting to create a window outside the desktop coordinates.  Check your CPUTWindowCreationParams");
-
-    //
-    // Width or height of zero means to use a default size
-    //
-    if( (0 == windowParams.windowWidth) || (0 == windowParams.windowHeight) )
-    {
-        windowParams.windowWidth = 1280;
-        windowParams.windowHeight = 720;
-    }
-
-	show();
-
     return CPUT_SUCCESS;
 }
 

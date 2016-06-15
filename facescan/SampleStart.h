@@ -57,10 +57,9 @@ class MySample : public CPUT_OGL
 public:
 	static MySample *Instance;
 
- 	QApplication* mApplication;
 private:
-	QDXWidget* w;
 	CPUTSprite			*mpFullscreenSprite;
+    QDXWidget             *w;
 
     float                  mfElapsedTime;
     CPUTCameraController  *mpCameraController;
@@ -102,7 +101,6 @@ public:
     virtual void ResizeWindow(UINT width, UINT height);
 
     void LoadAssets();
-    void SetCommandLineArguments(const CommandParser& mParsedCommandLine);
-	void RegisterMessageLoopCallback(std::function<int ()> exec );
+    QWidget& GetQWidget();
 };
 #endif // __CPUT_SAMPLESTARTDX11_H__
