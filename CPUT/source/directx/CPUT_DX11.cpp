@@ -117,13 +117,10 @@ CPUTResult CPUT_DX11::MakeWindow(const std::string WindowTitle, CPUTWindowCreati
 	mpWindow = new QDXWidget();
 
     result = mpWindow->Create(WindowTitle, windowParams);
-    
+
     mpWindow->RegisterLoopEvent([&]() { this->InnerExecutionLoop(); });
-    // mpWindow->RegisterCallbackKeyboardEvent([&](CPUTKey key, CPUTKeyState state) -> CPUTEventHandledCode { return this->CPUTHandleKeyboardEvent(key, state); });
-    // mpWindow->RegisterCallbackMouseEvent([&](int x, int y, int wheel, CPUTMouseState state, CPUTEventID message) -> CPUTEventHandledCode { return this->CPUTHandleMouseEvent(x, y, wheel, state, message); });
+
     mpWindow->RegisterCallbackResizeEvent([&](int width, int height) { this->ResizeWindow(width, height); });
-
-
     mpWindow->RegisterCallbackKeyboardEvent([&](CPUTKey key, CPUTKeyState state) -> CPUTEventHandledCode { return this->CPUTHandleKeyboardEvent(key, state); });
     mpWindow->RegisterCallbackMouseEvent([&](int x, int y, int wheel, CPUTMouseState state, CPUTEventID message) -> CPUTEventHandledCode { return this->CPUTHandleMouseEvent(x, y, wheel, state, message); });
  

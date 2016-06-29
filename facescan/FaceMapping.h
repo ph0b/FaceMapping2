@@ -16,8 +16,7 @@
 #ifndef __MENU_FACEMAPPING__
 #define __MENU_FACEMAPPING__
 
-#include "MenuBase.h"
-#include "../CFaceModel.h"
+#include "CFaceModel.h"
 #include <vector>
 #include "CPUT.h"
 #include "CPUTRenderTarget.h"
@@ -27,7 +26,7 @@
 #include "CPUTText.h"
 #include "CPUTModel.h"
 #include "CPUTSoftwareMesh.h"
-#include "../FaceMap/CPipeline.h"
+#include "FaceMap/CPipeline.h"
 
 enum DebugTextureView
 {
@@ -137,19 +136,17 @@ struct HairInfo
 	CPUTAssetSet *set;
 };
 
-class Menu_FaceMapping : public MenuBase
+class FaceMapping
 {
 public:
-	virtual void Init();
-	virtual void Shutdown();
+        void Init();
+        void Shutdown();
 
 	void HandleCPUTEvent(int eventID, int controlID, CPUTControl *control);
-	virtual CPUTEventHandledCode HandleKeyboardEvent(CPUTKey key, CPUTKeyState state);
+        CPUTEventHandledCode HandleKeyboardEvent(CPUTKey key, CPUTKeyState state);
 
 	void Update(float dt);
-	virtual CPUTEventHandledCode HandleMouseEvent(int x, int y, int wheel, CPUTMouseState state, CPUTEventID message);
-
-	void ActivationChanged(bool active);
+         CPUTEventHandledCode HandleMouseEvent(int x, int y, int wheel, CPUTMouseState state, CPUTEventID message);
 
 	void LoadFace(const std::string &filename);
 
@@ -157,27 +154,24 @@ public:
 
 	bool IsFaceLoaded();
 
+        void SetDefaultTweaks();
+        void SetHairFromIndex(int hairIndex);
+
+
 private:
 
-	void SetDefaultTweaksInternal();
 	void SetDefaultDebug();
 	
-	void LoadFaceUI();
-
-	void DrawGUI(CPUTRenderParameters &renderParams);
-
-	void HandleExport();
-
-	void CreateFaceMaps(CPUTRenderParameters &renderParams);
-
 	void ResetCameraDefaults();
 	void ResetTweaks();
 	void ResetActiveMorphTargets(bool post);
 
-	void SetLoadHairDef(int hairIndex, bool force = false);
+        void loadHair(CPUTAssetSet *set, const char *modelName, const char *displayName );
+        void loadBeardPart(CPUTAssetSet *beardSet, const char *modelName, const char *displayName);
 
 	void UpdateLayout(CPUTRenderParameters &renderParams);
 	void CreateMorphTargetEntries(std::vector<MorphTargetEntry> &list, std::vector<SMorphTweakParamDef> &defs, std::vector<float> &weights, bool post);
+        void addMorphParam(const char *category, const char *name, float defaultValue, const char *modelName, float range1, float range2, float apply1, float apply2);
 
 	float2 mViewportDim;
 	float mImGUIMenuWidth;
@@ -216,7 +210,6 @@ private:
 
 	SBaseHeadInfo mHeadInfo;
 
-	const char **mHairDefNames;
 	std::vector<SHairDef> mHairDefs;
 	CPUTSoftwareMesh mCurrentHair;
 
@@ -257,9 +250,13 @@ private:
 	float mDirectionalLightAngle;
 	float mDirectionalLightIntensity;
 	float mAmbientLightIntensity;
-
-	bool mIsEditingLandmarks;
 	
+        void loadLandmarkSet(CPUTAssetSet *landmarkSet);
+        void loadCubeMap(std::string mediaDir);
+        void loadHeadModelAndAssets(std::string mediaDir);
+        void loadHeadTextures(std::string headDir);
+        void addMorphParameters(CPUTAssetSet* headSet);
+        void loadMorphTargets(CPUTAssetSet* headSet);
 };
 
 #endif

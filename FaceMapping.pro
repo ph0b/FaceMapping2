@@ -91,18 +91,6 @@ SOURCES +=\
     facescan/Facemap/CHeadGeometryStage.cpp \
     facescan/Facemap/CPipeline.cpp \
     facescan/Facemap/FaceMapUtil.cpp \
-    facescan/imgui/imgui.cpp \
-    facescan/imgui/imgui_demo.cpp \
-    facescan/imgui/imgui_draw.cpp \
-    facescan/imgui/imgui_impl_dx11.cpp \
-    facescan/Menu/Controls/Font.cpp \
-    facescan/Menu/Controls/MenuButton.cpp \
-    facescan/Menu/Controls/MenuCanvas.cpp \
-    facescan/Menu/Controls/MenuControl.cpp \
-    facescan/Menu/Menu_FaceScanPreview.cpp \
-    facescan/Menu/Menu_FaceMapping.cpp \
-    facescan/Menu/MenuController.cpp \
-    facescan/Menu/MenuGlob.cpp \
     facescan/CFaceModel.cpp \
     facescan/GameFaceScan.cpp \
     facescan/OBJExporter.cpp \
@@ -110,7 +98,8 @@ SOURCES +=\
     facescan/SampleStart.cpp \
     facescan/SampleUtil.cpp \
     facescan/windowsMain.cpp \
-    CPUT/middleware/stb/stb_image.c
+    CPUT/middleware/stb/stb_image.c \
+    facescan/FaceMapping.cpp
 
 HEADERS  +=  CPUT/include/android/CPUTTimerLinux.h \
     CPUT/include/android/CPUTWindowAndroid.h \
@@ -198,23 +187,7 @@ HEADERS  +=  CPUT/include/android/CPUTTimerLinux.h \
     facescan/Facemap/CHeadGeometryStage.h \
     facescan/Facemap/CPipeline.h \
     facescan/Facemap/FaceMapUtil.h \
-    facescan/imgui/imconfig.h \
-    facescan/imgui/imgui.h \
-    facescan/imgui/imgui_impl_dx11.h \
-    facescan/imgui/imgui_internal.h \
-    facescan/imgui/stb_rect_pack.h \
-    facescan/imgui/stb_textedit.h \
-    facescan/imgui/stb_truetype.h \
-    facescan/Menu/Controls/Font.h \
-    facescan/Menu/Controls/MenuButton.h \
-    facescan/Menu/Controls/MenuCanvas.h \
-    facescan/Menu/Controls/MenuControl.h \
-    facescan/Menu/Controls/MenuTypes.h \
-    facescan/Menu/Menu_FaceScanPreview.h \
-    facescan/Menu/Menu_FaceMapping.h \
-    facescan/Menu/MenuBase.h \
-    facescan/Menu/MenuController.h \
-    facescan/Menu/MenuGlob.h \
+    facescan/FaceMapping.h \
     facescan/CFaceModel.h \
     facescan/GameFaceScan.h \
     facescan/OBJExporter.h \
@@ -243,6 +216,7 @@ win32:CONFIG(release, debug|release): LIBS += -L$$(RSSDK_DIR)lib/Win32/ -llibpxc
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$(RSSDK_DIR)lib/Win32/ -llibpxc_d
 
 LIBS += -lAdvapi32
+LIBS += -lUser32
 LIBS += -lOle32
 LIBS += -lComdlg32
 LIBS += -ld3d11

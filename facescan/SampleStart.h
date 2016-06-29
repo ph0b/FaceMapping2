@@ -37,6 +37,8 @@
 #include "CPUTParser.h"
 #include "CPUTTextureDX11.h"
 
+class FaceMapping;
+
 // define some controls
 #define FPS_VALUES 64
 const CPUTControlID ID_MAIN_PANEL = 10;
@@ -58,8 +60,9 @@ public:
 	static MySample *Instance;
 
 private:
+    QDXWidget             *mpQDXWidget;
 	CPUTSprite			*mpFullscreenSprite;
-    QDXWidget             *w;
+    FaceMapping         *mpFaceMapping;
 
     float                  mfElapsedTime;
     CPUTCameraController  *mpCameraController;
@@ -72,7 +75,9 @@ private:
 
 
 public:
-    MySample() : 
+    MySample() : mpQDXWidget(NULL),
+        mpFullscreenSprite(NULL),
+        mpFaceMapping(NULL),
         mfElapsedTime(0.0),
         mpCameraController(NULL),
         mpDebugSprite(NULL),
