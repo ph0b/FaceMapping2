@@ -226,8 +226,6 @@ void CPUTGPUTimerDX11::FinishQueries( bool forceAll )
 
       GPUTimerInfo & item = m_history[safeIndex];
 
-      bool tryGather = true;
-
       if( item.QueryActive )
       {
          bool loopUntilDone = ((s_lastFrameID - item.FrameID) >= c_dataQueryMaxLag) || forceAll;

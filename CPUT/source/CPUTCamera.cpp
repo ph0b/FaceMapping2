@@ -276,7 +276,6 @@ CPUTCameraModelViewer::~CPUTCameraModelViewer()
 void CPUTCameraModelViewer::Update(float deltaSeconds)
 {
 
-	float prevDistance = mDistance;
 	float lerp = floatClamp( deltaSeconds * 6, 0.0f, 1.0f);
 	mDistance = floatLerp(mDistance, mDstDistance, lerp);
 

@@ -767,7 +767,6 @@ void Menu_FaceMapping::DrawGUI(CPUTRenderParameters &renderParams)
     {
         if (ImGui::Button("Reset Shaping"))
             ResetActiveMorphTargets(false);
-        bool inNode = false;
         bool nodeOpened = false;
         std::string *curCategory = NULL;
         for (int i = 0; i < (int)mMorphParamDefs.size(); i++)
@@ -780,7 +779,6 @@ void Menu_FaceMapping::DrawGUI(CPUTRenderParameters &renderParams)
                     ImGui::TreePop();
                 }
                 nodeOpened = ImGui::TreeNode(def->Category.c_str());
-                inNode = true;
                 curCategory = &def->Category;
             }
             if (nodeOpened)
@@ -809,7 +807,6 @@ void Menu_FaceMapping::DrawGUI(CPUTRenderParameters &renderParams)
     {
         if (ImGui::Button("Reset Post Shaping"))
             ResetActiveMorphTargets(true);
-        bool inNode = false;
         bool nodeOpened = false;
         std::string *curCategory = NULL;
         for (int i = 0; i < (int)mPostMorphParamDefs.size(); i++)
@@ -822,7 +819,6 @@ void Menu_FaceMapping::DrawGUI(CPUTRenderParameters &renderParams)
                     ImGui::TreePop();
                 }
                 nodeOpened = ImGui::TreeNode(def->Category.c_str());
-                inNode = true;
                 curCategory = &def->Category;
             }
             if (nodeOpened)
@@ -953,8 +949,6 @@ void Menu_FaceMapping::Render(CPUTRenderParameters &renderParams)
 
     if (IsFaceLoaded())
     {
-        CPUTCamera *pLastCamera = renderParams.mpCamera;
-
         SPipelineInput input;
         input.FaceModel = &mFaceModel;
         input.RenderParams = &renderParams;

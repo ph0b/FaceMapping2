@@ -64,8 +64,6 @@ CPUTResult CPUTGuiControllerDX11::DeleteController()
 //-----------------------------------------------------------------------------
 CPUTResult CPUTGuiControllerDX11::Initialize(const std::string& material, const std::string& font)
 {
-    ID3D11DeviceContext* pImmediateContext = CPUT_DX11::GetContext();
-    ID3D11Device *pDevice = CPUT_DX11::GetDevice();
     CPUTAssetLibrary* pAssetLibrary = CPUTAssetLibrary::GetAssetLibrary();
     HRESULT hr = S_OK;
     std::string ErrorMessage;

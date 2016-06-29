@@ -569,9 +569,6 @@ LRESULT CALLBACK CPUTWindowWin::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 
     case WM_SIZE:
         int width, height;
-        height = HIWORD(lParam);
-        width  = LOWORD(lParam);
-            
         RECT windowRect;
         if(0==GetClientRect(hWnd, &windowRect)) // this gets the client area inside the window frame *excluding* frames/menu bar/etc
             break;

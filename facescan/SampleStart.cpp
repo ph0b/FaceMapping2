@@ -77,8 +77,6 @@ void MySample::Create()
     gMenu_FaceMapping->LoadFace(debugFace);
     MenuController_PushMenu(gMenu_FaceMapping);
 
-    MenuGlob_GUI()->SetActivePanel(MENU_CPUT_PANEL_ID);
-
 }
 
 
@@ -114,10 +112,7 @@ void MySample::Update(double deltaSeconds)
 //-----------------------------------------------------------------------------
 CPUTEventHandledCode MySample::HandleKeyboardEvent(CPUTKey key, CPUTKeyState state)
 {
-    static bool panelToggle = false;
     CPUTEventHandledCode    handled = CPUT_EVENT_UNHANDLED;
-
-    CPUTGuiController*  pGUI = CPUTGetGuiController();
 
     switch(key)
     {
@@ -184,12 +179,6 @@ void MySample::HandleCallbackEvent( CPUTEventID Event, CPUTControlID ControlID, 
 //-----------------------------------------------------------------------------
 void MySample::ResizeWindow(UINT width, UINT height)
 {
-    CPUTAssetLibrary *pAssetLibrary = CPUTAssetLibrary::GetAssetLibrary();
-
-    // Before we can resize the swap chain, we must release any references to it.
-    // We could have a "AssetLibrary::ReleaseSwapChainResources(), or similar.  But,
-    // Generic "release all" works, is simpler to implement/maintain, and is not performance critical.
-
     CPUT_DX11::ResizeWindow( width, height );
 
     // Resize any application-specific render targets here
@@ -205,8 +194,8 @@ void MySample::Render(double deltaSeconds)
 {
     CPUTRenderParameters renderParams;
 
-    const int DEFAULT_MATERIAL = 0;
-    const int SHADOW_MATERIAL = 1;
+//    const int DEFAULT_MATERIAL = 0;
+//    const int SHADOW_MATERIAL = 1;
     renderParams.mpShadowCamera = NULL;
     renderParams.mpCamera = mpShadowCamera;
     renderParams.mpPerFrameConstants = (CPUTBuffer*)mpPerFrameConstantBuffer;

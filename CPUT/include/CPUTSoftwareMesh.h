@@ -69,8 +69,6 @@ public:
 
 	void FreeAll();
 
-	bool Intersect(float3 point, float3 dir, float3 *outPos);
-
 private:
 
 	void CopyVertexDataToBuffer(D3D11_INPUT_ELEMENT_DESC *layout, void *buffer, int bufferSize);

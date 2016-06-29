@@ -1428,7 +1428,6 @@ inline float4x4 float4x4PerspectiveRH(float width, float height, float nearPlane
 inline float4x4 float4x4OrthographicOffCenterLH(float left, float right, float bottom, float top, float nearPlane, float farPlane)
 {
     float4x4 m = float4x4Identity();
-    float rWidth = 1.0f / (right - left);
 
     m.r0.x = 2.0f/(right-left);
     m.r1.y = 2.0f/(top-bottom);
@@ -1436,8 +1435,6 @@ inline float4x4 float4x4OrthographicOffCenterLH(float left, float right, float b
     m.r3.x = -((right + left)/(right - left));
     m.r3.y = -((top + bottom)/(top - bottom));
     m.r3.z = -(1 / (farPlane - nearPlane)) * nearPlane;
-
-
 
     return m;
 }

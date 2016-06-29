@@ -379,7 +379,6 @@ CPUTEventHandledCode CPUTDropdown::HandleMouseEvent(int x, int y, int wheel, CPU
         return CPUT_EVENT_UNHANDLED;
     }
 
-    CPUTEventHandledCode handledCode = CPUT_EVENT_UNHANDLED;
     bool mouseInTop = TopContainsPoint(x, y);
     bool mouseInTray = TrayContainsPoint(x, y);
     bool trayOpen = CPUT_DROPDOWN_GUI_MOUSE_PRESSED == mControlGuiState;

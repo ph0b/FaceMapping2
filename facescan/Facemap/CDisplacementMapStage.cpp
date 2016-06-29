@@ -99,7 +99,6 @@ bool CDisplacementMapStage::Execute(SDisplacementMapStageInput *input)
 	CreateFaceCPUTModel(input->FaceModel);
 
 	CPUTRenderParameters *renderParams = input->RenderParams;
-	CPUTCamera *pLastCamera = renderParams->mpCamera;
 
 	renderParams->mpCamera = mCamera;
 	float black[] = { 0.0f, 0.0f, 0.0f, 1.0f };

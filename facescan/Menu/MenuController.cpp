@@ -106,8 +106,6 @@ void MenuController_PopMenu( bool defer )
 	}
 	else
 	{
-		int stackCount = (int)gController.MenuStack.size();
-
 		MenuBase *activeMenu = GetActiveMenu();
 		MenuBase *nextMenu = NULL;
 		if (!gController.MenuStack.empty())

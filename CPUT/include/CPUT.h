@@ -617,9 +617,6 @@ public:
             double deltaSeconds = mpTimer->GetElapsedTime();
             Update(deltaSeconds);
             Present(); // Note: Presenting immediately before Rendering minimizes CPU stalls (i.e., execute Update() before Present() stalls)
-
-            double totalSeconds = mpTimer->GetTotalTime();
-            //CPUTMaterialDX11::ResetStateTracking();
             Render(deltaSeconds);
         }
 #ifdef CPUT_GPA_INSTRUMENTATION
@@ -629,8 +626,6 @@ public:
             double deltaSeconds = mpTimer->GetElapsedTime();
             Update(deltaSeconds);
             Present(); // Note: Presenting immediately before Rendering minimizes CPU stalls (i.e., execute Update() before Present() stalls)
-
-            double totalSeconds = mpTimer->GetTotalTime();
             Render(deltaSeconds);
         }
 

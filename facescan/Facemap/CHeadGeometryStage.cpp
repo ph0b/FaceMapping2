@@ -112,7 +112,7 @@ void CHeadGeometryStage::UpdateHeadProjectionInfo(CDisplacementMapStageOutput *d
 	float extrudeBaseZ = noseTip.z + extrudeMaxZ;
 
 	// max is nose tip
-	outProjInfo->ExtrudeMinZ = noseTip.z + extrudeMaxZ + zDisplaceOffset;
+    outProjInfo->ExtrudeMinZ = extrudeBaseZ + zDisplaceOffset;
 	outProjInfo->ExtrudeMaxZ = outProjInfo->ExtrudeMinZ - extrudeMaxZ* scale;
 	outProjInfo->DepthMapRangeMin = dispMapInfo->DepthMap_ZMeshStart - extrudeMaxZ * headMSUnitsPerRSUnitsZNormalized;
 	outProjInfo->DepthMapRangeMax = dispMapInfo->DepthMap_ZMeshStart;

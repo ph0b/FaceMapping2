@@ -487,8 +487,6 @@ CPUTResult CPUTMaterialDX11::LoadMaterial(
     }
     mpConfigBlock = pBlock;
 
-    // get necessary device and AssetLibrary pointers
-    ID3D11Device *pD3dDevice = CPUT_DX11::GetDevice();
     CPUTAssetLibraryDX11 *pAssetLibrary = (CPUTAssetLibraryDX11*)CPUTAssetLibrary::GetAssetLibrary();
 
     CPUTConfigEntry *pValue;

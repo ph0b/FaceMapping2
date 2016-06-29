@@ -67,7 +67,6 @@ void QDXWidget::update()
         }
 
 		if(handledCode == CPUT_EVENT_UNHANDLED) {
-    CPUTEventHandledCode handledCode = CPUT_EVENT_UNHANDLED;
 			QWidget::keyReleaseEvent(event);
 		}
 	}
@@ -78,7 +77,7 @@ bool QDXWidget::nativeEvent( QByteArray const& eventType, void* message, long* r
 
 	if( !mWndProc.empty() ) {
 		for( auto c : mWndProc ) {
-			if( c( ( HWND )this->winId(), msg->message, msg->wParam, msg->lParam ) ) {
+            if( c( msg->hwnd, msg->message, msg->wParam, msg->lParam ) ) {
 				return 1;
 			}
 		}

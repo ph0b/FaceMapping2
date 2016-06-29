@@ -220,15 +220,15 @@ void CopyPXCImageToTexture(PXCImage *srcImage, SCodeTextureWrap *dstTexture)
 {
 	if (srcImage)
 	{
-		ID3D11DeviceContext *context = CPUT_DX11::GetContext();
-		D3D11_MAPPED_SUBRESOURCE mapData;
+        ID3D11DeviceContext *context = CPUT_DX11::GetContext();
+        D3D11_MAPPED_SUBRESOURCE mapData;
 		PXCImage::ImageData colorImageData;
 		srcImage->AcquireAccess(PXCImage::ACCESS_READ, PXCImage::PixelFormat::PIXEL_FORMAT_RGB24, &colorImageData);
 		PXCImage::ImageInfo colorInfo = srcImage->QueryInfo();
 		TextureWrap_AdjustSize(dstTexture, colorInfo.width, colorInfo.height);
 		context->Map(dstTexture->Texture, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapData);
-		uint32 *data = (uint32*)mapData.pData;
-		for (int y = 0; y < colorInfo.height; y++)
+
+        for (int y = 0; y < colorInfo.height; y++)
 		{
 			byte *srcData = ((byte*)colorImageData.planes[0]) + colorImageData.pitches[0] * y;
 			byte *dstData = ((byte*)mapData.pData) + mapData.RowPitch * (colorInfo.height - y - 1);

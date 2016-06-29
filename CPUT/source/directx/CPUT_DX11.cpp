@@ -852,10 +852,7 @@ void CPUT_DX11::InnerExecutionLoop()
     {
         double deltaSeconds = mpTimer->GetElapsedTime();
         Update(deltaSeconds);
-        Present(); // Note: Presenting immediately before Rendering minimizes CPU stalls (i.e., execute Update() before Present() stalls)
-
-        double totalSeconds = mpTimer->GetTotalTime();
-        
+        Present(); // Note: Presenting immediately before Rendering minimizes CPU stalls (i.e., execute Update() before Present() stalls)       
         Render(deltaSeconds);
         if(!mpWindow->DoesWindowHaveFocus() && !mpWindow->IsTopmost())
         {

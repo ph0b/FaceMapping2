@@ -317,7 +317,7 @@ CPUTEventHandledCode CPUTSlider::HandleMouseEvent(int x, int y, int wheel, CPUTM
         // reset flags
         mbStartedClickInside = false;
         SetFocus(false);
-        return CPUT_EVENT_HANDLED;
+        return handledCode;
     }
 
     // handle the initial grabbing of the nub

@@ -346,8 +346,8 @@ int CPUTSoftwareMesh::BuildDXVertLayout(D3D11_INPUT_ELEMENT_DESC *layout, int la
 void CPUTSoftwareMesh::CopyToDX11Mesh(CPUTMeshDX11 *dstMesh)
 {
 	D3D11_INPUT_ELEMENT_DESC layout[eSMComponent_Count + 1];
-	int count = BuildDXVertLayout(layout, ARRAYSIZE(layout));
-	int stride = CalculateStride(layout);
+    int count = BuildDXVertLayout(layout, ARRAYSIZE(layout));
+    int stride = CalculateStride(layout);
 	
 	dstMesh->UpdateVertCountAndFormat(mVertCount, layout, stride);
 
@@ -436,23 +436,11 @@ void CPUTSoftwareMesh::CopyFrom(CPUTSoftwareMesh *srcMesh)
 	}
 	UpdatePointers();
 
-	MeshTopology = srcMesh->MeshTopology;
+    MeshTopology = srcMesh->MeshTopology;
 	mVertCount = srcMesh->mVertCount;
 
 	// Index Buffer
 	UpdateIndexCount(srcMesh->IB != NULL ? srcMesh->IndexBufferCount : 0);
 	memcpy(IB, srcMesh->IB, sizeof(uint32) * srcMesh->IndexBufferCount);
 
-}
-
-bool CPUTSoftwareMesh::Intersect(float3 point, float3 dir, float3 *outPos)
-{
-	int triCount = IndexBufferCount / 3;
-	for (int i = 0; i < triCount; i++)
-	{
-		float3 &pos1 = Pos[IB[i * 3]];
-		float3 &pos2 = Pos[IB[i * 3 + 1]];
-		float3 &pos3 = Pos[IB[i * 3 + 2]];
-	}
-	return true;
 }
