@@ -35,33 +35,12 @@ struct SSampleUtilGlob
 	CPUTTextureDX11 *codeTextures[CODE_TEXTURE_COUNT];
 	CPUTMaterial *codeMaterial;
 
-	std::string userDataDirectory;
-	std::string myAssetsDirectory;
-
-    CPUTModel *boxModel;
-
-	CPUTSprite *QuadSprite;
 };
-
 static SSampleUtilGlob gUtilGlob;
 
-const std::string &GetUserDataDirectory()
-{
-    return gUtilGlob.userDataDirectory;
-}
-
-const std::string &GetMyAssetsDirectory()
-{
-	return gUtilGlob.myAssetsDirectory;
-}
 
 void FaceMappingUtil_Init()
 {
-	std::string dir;
-	CPUTFileSystem::GetExecutableDirectory(&dir);
-	CPUTFileSystem::CombinePath(dir, "Media\\MyAssets", &gUtilGlob.myAssetsDirectory);
-    CPUTFileSystem::CombinePath(dir, "userdata", &gUtilGlob.userDataDirectory);
-
     CPUTAssetLibrary *pAssetLibrary = CPUTAssetLibrary::GetAssetLibrary();
     for (int i = 0; i < CODE_TEXTURE_COUNT; i++)
     {
@@ -75,15 +54,13 @@ void FaceMappingUtil_Init()
 
 void FaceMappingUtil_Shutdown()
 {
-	SAFE_RELEASE(gUtilGlob.codeMaterial);
-    SAFE_DELETE(gUtilGlob.QuadSprite);
+    SAFE_RELEASE(gUtilGlob.codeMaterial);
 
 	for (int i = 0; i < CODE_TEXTURE_COUNT; i++)
 	{
 		SetCodeTexture(i, (CPUTTexture*)NULL);
 		SAFE_RELEASE(gUtilGlob.codeTextures[i]);
 	}
-
 }
 
 #define CODE_TEXTURE_COUNT 8
@@ -104,35 +81,6 @@ void SetCodeTexture(int index, SCodeTextureWrap *texture)
 {
 	assert(index < CODE_TEXTURE_COUNT);
 	gUtilGlob.codeTextures[index]->SetTextureAndShaderResourceView(NULL, (texture != NULL) ? texture->SRV : NULL);
-}
-
-void DrawCube(CPUTRenderParameters &renderParams, float3 position, float size, CPUTColor4 color)
-{
-    DrawBox(renderParams, position, float3(size, size, size), color);
-}
-
-void DrawBox(CPUTRenderParameters &renderParams, float3 position, float3 size, CPUTColor4 color)
-{
-    size *= 0.01f;
-    float4x4 parentMatrix = float4x4Scale(size) * float4x4Translation(position);
-    gUtilGlob.boxModel->SetParentMatrix(parentMatrix);
-    gUtilGlob.boxModel->mUserData1 = color.ToFloat4();
-    gUtilGlob.boxModel->Render(renderParams, 0);
-}
-
-
-void DrawQuadSC(CPUTRenderParameters &renderParams, float2 position, float size, CPUTColor4 color)
-{
-	CPUTBuffer *pBuffer = (CPUTBuffer*)(renderParams.mpPerModelConstants);
-	CPUTModelConstantBuffer cb;
-	
-	cb.UserData1 = color.ToFloat4();
-	pBuffer->SetData(0, sizeof(CPUTModelConstantBuffer), &cb);
-
-	CPUTSprite *sprite = gUtilGlob.QuadSprite;
-	sprite->SetCoordType(SpriteCoordType_Screen);
-	sprite->SetC(position.x, position.y, size, size);
-	sprite->DrawSprite(renderParams);
 }
 
 void CopyOBJDataToSoftwareMesh(tObjModel *objModel, CPUTSoftwareMesh *softwareMesh)
@@ -163,29 +111,23 @@ void CopyOBJDataToSoftwareMesh(tObjModel *objModel, CPUTSoftwareMesh *softwareMe
 	}
 }
 
-
-ViewportScoped::ViewportScoped(ID3D11DeviceContext *context, D3D11_VIEWPORT *viewports, int count, CPUTRenderParameters *params)
+CPUTTexture *LoadTexture(std::string &dir, const char *filename)
 {
-    mStoredViewportCount = 8;
-    context->RSGetViewports(&mStoredViewportCount, mStoredViewports);
-    mContext = context;
-    mParams = params;
-    if (params)
-    {
-        mStoredParamWidth = params->mWidth;
-        mStoredParamHeight = params->mHeight;
-        params->mWidth = (int)viewports->Width;
-        params->mHeight = (int)viewports->Height;
-    }
-    context->RSSetViewports(count, viewports);
+    std::string textureName;
+    CPUTFileSystem::CombinePath(dir, filename, &textureName);
+    return CPUTTexture::Create(std::string("dynamicLoad"), textureName, false);
 }
 
-ViewportScoped::~ViewportScoped()
+bool LoadCPUTModelToSWMesh(CPUTAssetSet *set, const char *modelName, CPUTSoftwareMesh *outMesh)
 {
-    if (mParams)
-    {
-        mParams->mWidth = mStoredParamWidth;
-        mParams->mHeight = mStoredParamHeight;
-    }
-    mContext->RSSetViewports(mStoredViewportCount, mStoredViewports);
+    CPUTModel *model = NULL;
+    CPUTResult result = set->GetAssetByName(modelName, (CPUTRenderNode**)&model);
+    assert(result == CPUT_SUCCESS);
+
+    // get first mesh
+    CPUTMeshDX11 *dx11Mesh = (CPUTMeshDX11 *)model->GetMesh(0);
+    outMesh->CopyFromDX11Mesh(dx11Mesh);
+    outMesh->ApplyTransform(model->GetWorldMatrix());
+    SAFE_RELEASE(model);
+    return true;
 }

@@ -32,9 +32,6 @@ struct SCodeTextureWrap
 	D3D11_TEXTURE2D_DESC Desc;
 };
 
-const std::string &GetUserDataDirectory();
-const std::string &GetMyAssetsDirectory();
-
 void FaceMappingUtil_Init();
 void FaceMappingUtil_Shutdown();
 
@@ -49,31 +46,11 @@ CPUTMaterial *GetMeshPreviewMaterial();
 class CPUTModel;
 CPUTModel *LoadObjAsCPUTModel(const char *objFilename);
 
-void DrawCube(CPUTRenderParameters &renderParams, float3 position, float size, CPUTColor4 color);
-void DrawBox(CPUTRenderParameters &renderParams, float3 position, float3 size, CPUTColor4 color);
-
-void DrawQuadSC(CPUTRenderParameters &renderParams, float2 position, float size, CPUTColor4 color);
-
-class ViewportScoped
-{
-public:
-    ViewportScoped(ID3D11DeviceContext *context, D3D11_VIEWPORT *viewports, int count, CPUTRenderParameters *params = NULL);
-    ~ViewportScoped();
-
-private:
-    D3D11_VIEWPORT mStoredViewports[8];
-    UINT mStoredViewportCount;
-    ID3D11DeviceContext *mContext;
-
-    CPUTRenderParameters *mParams;
-    int mStoredParamWidth;
-    int mStoredParamHeight;
-};
-
-#define COMBINE1(X,Y) X##Y  // helper macro
-#define PUSH_VIEWPORT( context, viewports, count, params ) ViewportScoped COMBINE1(viewportBlock,__LINE__)(context, viewports, count, params);
-
-
 void CopyOBJDataToSoftwareMesh(tObjModel *objModel, CPUTSoftwareMesh *softwareMesh);
+
+CPUTTexture *LoadTexture(std::string &dir, const char *filename);
+
+class CPUTAssetSet;
+bool LoadCPUTModelToSWMesh(CPUTAssetSet *set, const char *modelName, CPUTSoftwareMesh *outMesh);
 
 #endif

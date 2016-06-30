@@ -23,7 +23,6 @@
 #include "CPUTWindow.h"
 
 class CPUTQtWindowWin;
-class QDXWidget;
 
 class QDXWidget : public QWidget, public CPUTWindow
 {
