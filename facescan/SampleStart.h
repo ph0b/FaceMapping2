@@ -19,18 +19,12 @@
 #include <stdio.h>
 #include <time.h>
 #include "CPUTSprite.h"
-#if defined(CPUT_FOR_OGL) || defined(CPUT_FOR_OGLES)
-#include "CPUT_OGL.h"
-#include "CPUTRenderTargetOGL.h"
-#endif
 
-#ifdef CPUT_FOR_DX11
 #include "CPUT_DX11.h"
 #include <D3D11.h>
 #include "CPUTBufferDX11.h"
-#endif
 
-#include "SampleUtil.h"
+#include "FaceMappingUtil.h"
 
 #include "CPUTSprite.h"
 #include "CPUTScene.h"
@@ -49,27 +43,18 @@ const CPUTControlID ID_TEST_CONTROL = 1000;
 const CPUTControlID ID_IGNORE_CONTROL_ID = -1;
 
 //-----------------------------------------------------------------------------
-#ifdef CPUT_FOR_DX11
+
 class MySample : public CPUT_DX11
-#endif
-#if defined(CPUT_FOR_OGL) || defined(CPUT_FOR_OGLES)
-class MySample : public CPUT_OGL
-#endif
 {
-public:
-	static MySample *Instance;
 
 private:
     QDXWidget             *mpQDXWidget;
-	CPUTSprite			*mpFullscreenSprite;
+    CPUTSprite			*mpFullscreenSprite;
     FaceMapping         *mpFaceMapping;
 
     float                  mfElapsedTime;
     CPUTCameraController  *mpCameraController;
-    CPUTSprite            *mpDebugSprite;
     CPUTAssetSet          *mpShadowCameraSet;
-    CPUTText              *mpText;
-    CommandParser          mParsedCommandLine;
     CPUTRenderTargetDepth *mpShadowRenderTarget;
 
 
@@ -80,27 +65,20 @@ public:
         mpFaceMapping(NULL),
         mfElapsedTime(0.0),
         mpCameraController(NULL),
-        mpDebugSprite(NULL),
         mpShadowCameraSet(NULL),
-        mpText(NULL),
         mpShadowRenderTarget(NULL)
     {
-		Instance = this;
 		
     }
-    virtual ~MySample()
-    {   
-    }
-    void ReleaseResources();
-    void CreateResources();
-    void BuildGUI();
+
+    virtual ~MySample(){}
 
     virtual CPUTEventHandledCode HandleKeyboardEvent(CPUTKey key, CPUTKeyState state);
     virtual CPUTEventHandledCode HandleMouseEvent(int x, int y, int wheel, CPUTMouseState state, CPUTEventID message);
     virtual void                 HandleCallbackEvent( CPUTEventID Event, CPUTControlID ControlID, CPUTControl *pControl );
     
     virtual void Create();
-	virtual void Shutdown();
+    virtual void Shutdown();
     virtual void Render(double deltaSeconds);
     virtual void Update(double deltaSeconds);
     virtual void ResizeWindow(UINT width, UINT height);

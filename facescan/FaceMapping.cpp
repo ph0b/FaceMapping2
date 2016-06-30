@@ -35,25 +35,6 @@
 #include <dxgi1_2.h>
 #include <dxgi1_3.h>
 #include <DXProgrammableCapture.h>
-const char *sDebugTextureViewNames[] =
-{
-    "None",
-    "Displacement Color",
-    "Displacement Depth",
-    "Final Head Diffuse"
-};
-static int cAssert = 1 / ((ARRAYSIZE(sDebugTextureViewNames) == DebugTextureView_Count) ? 1 : 0);
-
-const char *sDebugHeadDisplayTextureNames[] =
-{
-    "None",
-    "Displacement Control Map",
-    "Color Control Map",
-    "Feature Map",
-    "Color Transfer Map",
-    "Skin Map"
-};
-static int cAssert2 = 1 / ((ARRAYSIZE(sDebugHeadDisplayTextureNames) == DebugHeadDisplayTexture_Count) ? 1 : 0);
 
 const char *sPostBlendColorModes[] =
 {
@@ -62,14 +43,6 @@ const char *sPostBlendColorModes[] =
     "Adjust",
 };
 static int cAssert3 = 3 / ((ARRAYSIZE(sPostBlendColorModes) == PostBlendColorMode_Count) ? 1 : 0);
-
-const char *sCameraModes[] =
-{
-    "Model Viewer",
-    "Free",
-    "Orthographic"
-};
-static int cAssert4 = 3 / ((ARRAYSIZE(sCameraModes) == CameraMode_Count) ? 1 : 0);
 
 void FaceMapping::SetDefaultTweaks()
 {
@@ -112,14 +85,11 @@ static bool LoadCPUTModelToSWMesh(CPUTAssetSet *set, const char *modelName, CPUT
 
 void FaceMapping::SetDefaultDebug()
 {
-    mDebugTextureView = DebugTextureView_None;
-    mDebugHeadDisplayTextureView = DebugHeadDisplayTexture_None;
     mShowMapLandmarks = true;
     mRenderLandmarkMesh = false;
     mRenderMorphedLandmarkMesh = false;
     mRenderHeadLandmarks = false;
     mShowWireframe = false;
-    mFullscreenDebugTextureViewer = true;
     mUseOrthoCamera = false;
     mSkipFaceFit = false;
     mHideCubeMap = false;
@@ -127,41 +97,11 @@ void FaceMapping::SetDefaultDebug()
     mSkipFaceColorBlend = false;
     mSkipSeamFill = false;
 
-
-
-
     mDirectionalLightHeight = 0.0f;
     mDirectionalLightAngle = 0.0f;
     mDirectionalLightIntensity = 0.7f;
     mAmbientLightIntensity = 0.3f;
 
-}
-
-void FaceMapping::ResetCameraDefaults()
-{
-    CPUTCamera *fpsCamera = CPUTCamera::Create(CPUT_PERSPECTIVE);
-    mCameraControlFPS->SetCamera(fpsCamera);
-    mCameraControlFPS->SetLookSpeed(0.005f);
-    mCameraControlFPS->SetMoveSpeed(50.0f);
-    fpsCamera->SetPosition(float3(0.0f, 0.0f, -50.0f));
-    fpsCamera->SetFov(33.0f * float(3.14159265359 / 180.0));
-    fpsCamera->SetNearPlaneDistance(0.1f);
-    fpsCamera->SetFarPlaneDistance(400.0f);
-    SAFE_RELEASE(fpsCamera);
-
-    CPUTCamera *pCamera = (CPUTCamera*)mCameraControlViewer->GetCamera();
-    pCamera->SetFov(20.f * float(3.14159265359 / 180.0));
-    pCamera->SetNearPlaneDistance(0.1f);
-    pCamera->SetFarPlaneDistance(400.0f);
-
-    mCameraControlViewer->SetTarget(float3(0, 0, 0));
-    mCameraControlViewer->SetDistance(120.0f, 0.1f, 300.0f);
-    mCameraControlViewer->SetViewAngles(0, 0);
-
-    mCameraControlOrthographic->SetPosition(float3(0.0f, 0.0f, -50.0f));
-    mCameraControlOrthographic->SetLook(float3(0, 0, 0));
-    mCameraControlOrthographic->SetZoomRange(1.0f, 1.0f, 40.0f, 40.0f);
-    mCameraControlOrthographic->SetVolume(float3(-20.0f, -20.0f, -100.0f), float3(20.0f, 20.0f, -100.0f));
 }
 
 void FaceMapping::loadLandmarkSet(CPUTAssetSet *landmarkSet)
@@ -380,15 +320,17 @@ void FaceMapping::Init()
     SetDefaultDebug();
     SetDefaultTweaks();
 
-    mCameraMode = CameraMode_ModelViewer;
-    mCameraControlViewer = new CPUTCameraModelViewer();
-    mCameraControlFPS = CPUTCameraControllerFPS::Create();
-    mCameraControlOrthographic = new CPUTCameraControllerOrthographic();
-    mCameraControllers[CameraMode_Free] = mCameraControlFPS;
-    mCameraControllers[CameraMode_ModelViewer] = mCameraControlViewer;
-    mCameraControllers[CameraMode_Orthographic] = mCameraControlOrthographic;
+    CPUTCameraModelViewer *cameraModelViewer = new CPUTCameraModelViewer();
+    mCameraController = cameraModelViewer;
 
-    ResetCameraDefaults();
+    CPUTCamera *pCamera = (CPUTCamera*)mCameraController->GetCamera();
+    pCamera->SetFov(20.f * float(3.14159265359 / 180.0));
+    pCamera->SetNearPlaneDistance(0.1f);
+    pCamera->SetFarPlaneDistance(400.0f);
+
+    cameraModelViewer->SetTarget(float3(0, 0, 0));
+    cameraModelViewer->SetDistance(120.0f, 0.1f, 300.0f);
+    cameraModelViewer->SetViewAngles(0, 0);
 
     std::string mediaDir;
     CPUTFileSystem::GetMediaDirectory(&mediaDir);
@@ -457,13 +399,10 @@ void FaceMapping::SetHairFromIndex(int hairIndex)
 
 void FaceMapping::Shutdown()
 {
-    SAFE_DELETE(mCameraControlViewer);
-    SAFE_DELETE(mCameraControlFPS);
-    SAFE_DELETE(mCameraControlOrthographic);
+    SAFE_DELETE(mCameraController);
     SAFE_DELETE(mHeadAssetScene);
     SAFE_RELEASE(mCPUTLandmarkModel);
     SAFE_RELEASE(mpCubemap);
-    SAFE_DELETE(mDebugTextureSprite);
     for (int i = 0; i < (int)mHairDefs.size(); i++)
     {
         SAFE_RELEASE(mHairDefs[i].Model);
@@ -501,50 +440,33 @@ void FaceMapping::LoadFace(const std::string &filename)
 
 CPUTEventHandledCode FaceMapping::HandleKeyboardEvent(CPUTKey key, CPUTKeyState state)
 {
-    if (mCameraControllers[mCameraMode] != NULL)
+    if (mCameraController != NULL)
     {
-        mCameraControllers[mCameraMode]->HandleKeyboardEvent(key, state);
-    }
-
-    if (key == KEY_F1 && state == CPUT_KEY_UP)
-    {
-        mCameraMode = (CameraMode)((mCameraMode + 1) % CameraMode_Count);
+        mCameraController->HandleKeyboardEvent(key, state);
     }
     return CPUT_EVENT_HANDLED;
 }
 
 CPUTEventHandledCode FaceMapping::HandleMouseEvent(int x, int y, int wheel, CPUTMouseState state, CPUTEventID message)
 {
-    if (mCameraControllers[mCameraMode] != NULL)
+    if (mCameraController != NULL)
     {
-        return mCameraControllers[mCameraMode]->HandleMouseEvent(x, y, wheel, state, message);
+        return mCameraController->HandleMouseEvent(x, y, wheel, state, message);
     }
     return CPUT_EVENT_UNHANDLED;
 }
 
 void FaceMapping::Update(float dt)
 {
-    MySample::Instance->mAmbientColor = float4(mAmbientLightIntensity, mAmbientLightIntensity, mAmbientLightIntensity, 1.0f);
-    MySample::Instance->mLightColor = float4(mDirectionalLightIntensity, mDirectionalLightIntensity, mDirectionalLightIntensity, 1.0f);
-
-    if (mCameraControllers[mCameraMode] != NULL)
+    if (mCameraController != NULL)
     {
-        mCameraControllers[mCameraMode]->Update(dt);
+        mCameraController->Update(dt);
     }
-}
-
-inline float RemapRange(float value, float r1Min, float r1Max, float r2Min, float r2Max)
-{
-    float ratio = (value - r1Min) / (r1Max - r1Min);
-    ratio = floatClamp(ratio, 0.0f, 1.0f);
-    return r2Min + ratio * (r2Max - r2Min);
 }
 
 void FaceMapping::UpdateLayout(CPUTRenderParameters &renderParams)
 {
     mViewportDim = float2((float)renderParams.mWidth, (float)renderParams.mHeight);
-
-    mCameraControlOrthographic->SetViewportSize(mViewportDim.x, mViewportDim.y);
 }
 
 void FaceMapping::ResetActiveMorphTargets(bool post)
@@ -555,6 +477,14 @@ void FaceMapping::ResetActiveMorphTargets(bool post)
     {
         weights[i] = list[i].Default;
     }
+}
+
+
+inline float RemapRange(float value, float r1Min, float r1Max, float r2Min, float r2Max)
+{
+    float ratio = (value - r1Min) / (r1Max - r1Min);
+    ratio = floatClamp(ratio, 0.0f, 1.0f);
+    return r2Min + ratio * (r2Max - r2Min);
 }
 
 void FaceMapping::CreateMorphTargetEntries(std::vector<MorphTargetEntry> &list, std::vector<SMorphTweakParamDef> &defs, std::vector<float> &weights, bool post)
@@ -679,18 +609,15 @@ void FaceMapping::Render(CPUTRenderParameters &renderParams)
         mat->OverridePSTexture(0, headTextureOverride);
         SAFE_RELEASE(mat);
 
-        renderParams.mpCamera = (CPUTCamera*)mCameraControllers[mCameraMode]->GetCamera();
-
-        D3D11_VIEWPORT viewport = { 0.0f, 0.0f, mViewportDim.x, mViewportDim.y, 0.0f, 1.0f };
-        PUSH_VIEWPORT(CPUT_DX11::GetContext(), &viewport, 1, &renderParams);
-        ((CPUTCamera*)(mCameraControllers[mCameraMode]->GetCamera()))->SetAspectRatio(mViewportDim.x / mViewportDim.y);
+        renderParams.mpCamera = (CPUTCamera*)mCameraController->GetCamera();
+        renderParams.mpCamera->SetAspectRatio(mViewportDim.x / mViewportDim.y);
 
         // Update per frame constants
         {
             CPUTFrameConstantBuffer frameConstants;
-            CPUTCamera* pCamera = (CPUTCamera*)mCameraControllers[mCameraMode]->GetCamera();
+            CPUTCamera* pCamera = (CPUTCamera*)mCameraController->GetCamera();
             frameConstants.AmbientColor = float4(1.0) * mAmbientLightIntensity;
-            frameConstants.LightColor = MySample::Instance->mLightColor;
+            frameConstants.LightColor = float4(1.0)* 0.7f;
             frameConstants.LightDirection = float4(renderParams.mpShadowCamera->GetLookWS(), 1.0);
             frameConstants.InverseView = inverse(*pCamera->GetViewMatrix());
             frameConstants.Projection = *pCamera->GetProjectionMatrix();
@@ -738,56 +665,6 @@ void FaceMapping::Render(CPUTRenderParameters &renderParams)
             for (int i = 0; i < (int)mHeadInfo.BaseHeadLandmarks.size(); i++)
             {
                 DrawBox(renderParams, mHeadInfo.BaseHeadLandmarks[i], float3(0.25f, 0.25f, 0.25f), CPUTColor4(1.0f, 1.0f, 0.0f, 1.0f));
-            }
-        }
-
-
-        CPUTTexture *debugTexture = NULL;
-        if (mDebugTextureView != DebugTextureView_None)
-        {
-            switch (mDebugTextureView)
-            {
-            case DebugTextureView_DisplacementColor:
-            {
-                SetCodeTexture(0, mPipeline.DisplacementMapStage->Output.ColorMap->GetColorResourceView());
-            } break;
-            case DebugTextureView_DisplacementDepth:
-            {
-                SetCodeTexture(0, mPipeline.DisplacementMapStage->Output.DepthMap->GetColorResourceView());
-            } break;
-            case  DebugTextureView_FinalHeadDiffuse:
-            {
-                SetCodeTexture(0, mPipelineOutput.DiffuseTexture);
-            } break;
-            }
-
-            float2 center = float2(0.0f, 0.0f);
-            float spriteDim = 1.0f;
-            // Draw overlay of displacement maps
-            if (mFullscreenDebugTextureViewer)
-            {
-                spriteDim = floatMin((float)renderParams.mWidth, (float)renderParams.mHeight) / 1.2f - 20.0f;
-                center = float2((float)renderParams.mWidth, (float)renderParams.mHeight) / 2.0f;
-            }
-            else
-            {
-                spriteDim = floatMin((float)renderParams.mWidth, (float)renderParams.mHeight) / 2.5f - 20.0f;
-                center = float2(20.0f + spriteDim / 2.0f, 20.0f + spriteDim / 2.0f);// renderParams.mWidth, renderParams.mHeight) / 2.0f;
-                mDebugTextureSprite->SetCoordType(SpriteCoordType_Screen);
-                mDebugTextureSprite->SetTL(center.x - spriteDim / 2.0f, center.y - spriteDim / 2.0f, spriteDim, spriteDim);
-            }
-            mDebugTextureSprite->SetCoordType(SpriteCoordType_Screen);
-            mDebugTextureSprite->SetTL(center.x - spriteDim / 2.0f, center.y - spriteDim / 2.0f, spriteDim, spriteDim);
-            mDebugTextureSprite->DrawSprite(renderParams);
-
-            if (mShowMapLandmarks && (mDebugTextureView == DebugTextureView_DisplacementColor || mDebugTextureView == DebugTextureView_DisplacementDepth))
-            {
-                std::vector<float2> &landmarks = mPipeline.DisplacementMapStage->Output.MapLandmarks;
-                for (int i = 0; i < (int)landmarks.size(); i++)
-                {
-                    float2 pos = center + landmarks[i] * spriteDim / 2.0f;
-                    DrawQuadSC(renderParams, pos, 5.0f, CPUTColor4(1.0f, 1.0f, 0.0f, 1.0f));
-                }
             }
         }
     }

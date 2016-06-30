@@ -123,17 +123,6 @@ void CHeadGeometryStage::UpdateHeadProjectionInfo(CDisplacementMapStageOutput *d
 	outProjInfo->MapToHeadSpaceTransform = mapToHead;
 }
 
-
-
-
-
-inline float RemapRange(float value, float r1Min, float r1Max, float r2Min, float r2Max)
-{
-	float ratio = (value - r1Min) / (r1Max - r1Min);
-	ratio = floatClamp(ratio, 0.0f, 1.0f);
-	return r2Min + ratio * (r2Max - r2Min);
-}
-
 static void ApplyMorphTargets(std::vector<MorphTargetEntry> &entries, CPUTSoftwareMesh *mesh, bool post)
 {
 	// Apply all the morph targets
@@ -182,6 +171,13 @@ void CalculateMeshNormals(float3 *positions, uint32 *faces, int vertexCount, int
 	{
 		outNormals[i] = outNormals[i].normalize();
 	}
+}
+
+inline float RemapRange(float value, float r1Min, float r1Max, float r2Min, float r2Max)
+{
+    float ratio = (value - r1Min) / (r1Max - r1Min);
+    ratio = floatClamp(ratio, 0.0f, 1.0f);
+    return r2Min + ratio * (r2Max - r2Min);
 }
 
 void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)

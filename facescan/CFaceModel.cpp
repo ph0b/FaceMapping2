@@ -17,7 +17,7 @@
 #include "CPUTModel.h"
 #include "CPUTMesh.h"
 #include "CPUTMaterial.h"
-#include "SampleUtil.h"
+#include "FaceMappingUtil.h"
 #include "CPUTTexture.h"
 
 static uint32 gFaceScanUniqueId = 0;
@@ -101,8 +101,6 @@ void CFaceModel::LoadObjFilename(const std::string &filename, bool landmarks)
 
 CPUTModel *CFaceModel::CreateCPUTModel()
 {
-	ProfileBlockScoped block("LoadCPUTModel");
-	
 	CPUTModel *model = CPUTModel::Create();
 	CPUTMesh *mesh = CPUTMesh::Create();
 	mMesh.CopyToDX11Mesh((CPUTMeshDX11*)mesh);

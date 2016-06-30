@@ -92,14 +92,13 @@ SOURCES +=\
     facescan/Facemap/CPipeline.cpp \
     facescan/Facemap/FaceMapUtil.cpp \
     facescan/CFaceModel.cpp \
-    facescan/GameFaceScan.cpp \
     facescan/OBJExporter.cpp \
     facescan/ObjLoader.cpp \
     facescan/SampleStart.cpp \
-    facescan/SampleUtil.cpp \
     facescan/windowsMain.cpp \
     CPUT/middleware/stb/stb_image.c \
-    facescan/FaceMapping.cpp
+    facescan/FaceMapping.cpp \
+    facescan/FaceMappingUtil.cpp
 
 HEADERS  +=  CPUT/include/android/CPUTTimerLinux.h \
     CPUT/include/android/CPUTWindowAndroid.h \
@@ -189,13 +188,11 @@ HEADERS  +=  CPUT/include/android/CPUTTimerLinux.h \
     facescan/Facemap/FaceMapUtil.h \
     facescan/FaceMapping.h \
     facescan/CFaceModel.h \
-    facescan/GameFaceScan.h \
     facescan/OBJExporter.h \
     facescan/ObjLoader.h \
-    facescan/Profile.h \
     facescan/resource.h \
     facescan/SampleStart.h \
-    facescan/SampleUtil.h
+    facescan/FaceMappingUtil.h
 
 INCLUDEPATH += CPUT/include/DirectX \
     CPUT/include/windows \

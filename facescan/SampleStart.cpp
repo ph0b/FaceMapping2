@@ -29,23 +29,40 @@
 #include "CPUTFont.h"
 
 #include "FaceMapping.h"
+#include "FaceMappingUtil.h"
 
 CPUTCamera* GetCamera(CPUTScene* pScene);
-
-MySample * MySample::Instance = NULL;
 
 const UINT SHADOW_WIDTH_HEIGHT = 2048;
 //-----------------------------------------------------------------------------
 void MySample::Create()
 {
-    CreateResources();
+    CPUT_DX11::CreateResources();
+    int width, height;
+    mpWindow->GetClientDimensions(&width, &height);
+
+    std::string executableDirectory;
+    CPUTFileSystem::GetExecutableDirectory(&executableDirectory);
+
+    std::string mediaDir;
+    CPUTFileSystem::ResolveAbsolutePathAndFilename(executableDirectory + "Media/", &mediaDir);
+
+    CPUTAssetLibrary *pAssetLibrary = CPUTAssetLibrary::GetAssetLibrary();
+    pAssetLibrary->SetSystemDirectoryName(mediaDir + "System/");
+    pAssetLibrary->SetMediaDirectoryName(mediaDir);
+
+    mpShadowRenderTarget = CPUTRenderTargetDepth::Create();
+    mpShadowRenderTarget->CreateRenderTarget(std::string("$shadow_depth"), SHADOW_WIDTH_HEIGHT, SHADOW_WIDTH_HEIGHT, DXGI_FORMAT_D32_FLOAT);
+
+    mpCameraController = CPUTCameraControllerFPS::Create();
+    mpShadowCamera = CPUTCamera::Create(CPUT_ORTHOGRAPHIC);
 
     mpQDXWidget = static_cast<QDXWidget*>(mpWindow);
 
     int windowWidth, windowHeight;
     mpWindow->GetClientDimensions(&windowWidth, &windowHeight);
 
-    SampleUtil_Init();
+    FaceMappingUtil_Init();
 
     mpFaceMapping = new FaceMapping();
     mpFaceMapping->Init();
@@ -54,6 +71,13 @@ void MySample::Create()
 
     // go directly to the face mapping menu
     std::string userDir = GetUserDataDirectory();
+
+
+//    std::string dir;
+//    CPUTFileSystem::GetExecutableDirectory(&dir);
+//    std::string userDir;
+//    CPUTFileSystem::CombinePath(dir, "userdata", &userDir);
+
     std::string debugFace;
     CPUTFileSystem::CombinePath(userDir, "joe_sr300_1.obj", &debugFace);
     mpFaceMapping->LoadFace(debugFace);
@@ -68,89 +92,37 @@ void MySample::Shutdown()
 {
     CPUT_DX11::Shutdown();
     SAFE_DELETE(mpFaceMapping);
-    SampleUtil_Shutdown();
+    FaceMappingUtil_Shutdown();
+
+    // Note: these two are defined in the base.  We release them because we addref them.
+    SAFE_RELEASE(mpCamera);
+    SAFE_RELEASE(mpShadowCamera);
+    SAFE_DELETE(mpCameraController);
+    SAFE_DELETE(mpShadowRenderTarget);
+    CPUTAssetLibrary::GetAssetLibrary()->ReleaseAllLibraryLists();
+    CPUT_DX11::ReleaseResources();
 }
 
-//-----------------------------------------------------------------------------
 void MySample::Update(double deltaSeconds)
 {
-    if (mpWindow->DoesWindowHaveFocus())
-    {
-        mpCameraController->SetCamera(mpCamera);
-        if (mpCameraController)
-            mpCameraController->Update((float)deltaSeconds);
-    }
-
     mpFaceMapping->Update((float)deltaSeconds);
 
-    CPUTGetGuiController()->ControlModified();
-    CPUTGetGuiController()->Update();
 }
 
-// Handle keyboard events
-//-----------------------------------------------------------------------------
 CPUTEventHandledCode MySample::HandleKeyboardEvent(CPUTKey key, CPUTKeyState state)
 {
-    CPUTEventHandledCode    handled = CPUT_EVENT_UNHANDLED;
-
-    switch(key)
-    {
-    case KEY_ESCAPE:
-        handled = CPUT_EVENT_HANDLED;
-        PostQuitMessage(0);
-        break;
-
-    default:
-        break;
-    }
-
-    if (handled == CPUT_EVENT_UNHANDLED)
-    {
-        handled = mpFaceMapping->HandleKeyboardEvent(key, state);
-    }
-
-    // pass it to the camera controller
-    if(handled == CPUT_EVENT_UNHANDLED)
-    {
-        if (mpCameraController)
-            handled = mpCameraController->HandleKeyboardEvent(key, state);
-    }
-    return handled;
+    return mpFaceMapping->HandleKeyboardEvent(key, state);
 }
 
-// Handle mouse events
-//-----------------------------------------------------------------------------
 CPUTEventHandledCode MySample::HandleMouseEvent(int x, int y, int wheel, CPUTMouseState state, CPUTEventID message)
 {
-    CPUTEventHandledCode code = mpFaceMapping->HandleMouseEvent( x, y, wheel, state, message );
-    if (code != CPUT_EVENT_HANDLED)
-    {
-        if (mpCameraController)
-        {
-            return mpCameraController->HandleMouseEvent(x, y, wheel, state, message);
-        }
-    }
-    return code;
+    return mpFaceMapping->HandleMouseEvent( x, y, wheel, state, message );
 }
 
 // Handle any control callback events
 //-----------------------------------------------------------------------------
 void MySample::HandleCallbackEvent( CPUTEventID Event, CPUTControlID ControlID, CPUTControl *pControl )
 {
-    UNREFERENCED_PARAMETER(Event);
-    UNREFERENCED_PARAMETER(pControl);
-    std::string SelectedItem;
-    static bool resize = false;
-
-    switch(ControlID)
-    {
-    case ID_FULLSCREEN_BUTTON:
-        CPUTToggleFullScreenMode();
-        break;
-
-    default:
-        break;
-    }
 
 }
 
@@ -170,20 +142,20 @@ void MySample::Render(double deltaSeconds)
 {
     CPUTRenderParameters renderParams;
 
-//    const int DEFAULT_MATERIAL = 0;
-//    const int SHADOW_MATERIAL = 1;
     renderParams.mpShadowCamera = NULL;
     renderParams.mpCamera = mpShadowCamera;
     renderParams.mpPerFrameConstants = (CPUTBuffer*)mpPerFrameConstantBuffer;
     renderParams.mpPerModelConstants = (CPUTBuffer*)mpPerModelConstantBuffer;
     //Animation
     renderParams.mpSkinningData = (CPUTBuffer*)mpSkinningDataConstantBuffer;
+
     int windowWidth, windowHeight;
     mpWindow->GetClientDimensions( &windowWidth, &windowHeight);
 
     renderParams.mWidth = windowWidth;
     renderParams.mHeight = windowHeight;
     renderParams.mRenderOnlyVisibleModels = false;
+
     //*******************************
     // Draw the shadow scene
     //*******************************
@@ -202,67 +174,3 @@ void MySample::Render(double deltaSeconds)
 
     mpFaceMapping->Render(renderParams);
 }
-
-void MySample::ReleaseResources()
-{
-    // Note: these two are defined in the base.  We release them because we addref them.
-    SAFE_RELEASE(mpCamera);
-    SAFE_RELEASE(mpShadowCamera);
-    SAFE_DELETE(mpCameraController);
-    SAFE_DELETE(mpDebugSprite);
-    SAFE_DELETE(mpShadowRenderTarget);
-    CPUTAssetLibrary::GetAssetLibrary()->ReleaseAllLibraryLists();
-    CPUT_DX11::ReleaseResources();
-}
-
-CPUTCamera* GetCamera(CPUTScene* pScene)
-{
-    for (unsigned int i = 0; i < pScene->GetNumAssetSets(); i++)
-    {
-        CPUTCamera* pCamera = pScene->GetAssetSet(i)->GetFirstCamera();
-        if (pCamera)
-            return pCamera;
-    }
-    return NULL;
-}
-
-void MySample::CreateResources()
-{
-    CPUT_DX11::CreateResources();
-    int width, height;
-    mpWindow->GetClientDimensions(&width, &height);
-
-    CPUTAssetLibrary *pAssetLibrary = CPUTAssetLibrary::GetAssetLibrary();
-
-    std::string executableDirectory;
-    std::string mediaDirectory;
-
-    CPUTFileSystem::GetExecutableDirectory(&executableDirectory);
-    CPUTFileSystem::ResolveAbsolutePathAndFilename(executableDirectory + "Media/", &mediaDirectory);
-    
-    pAssetLibrary->SetMediaDirectoryName(mediaDirectory + "gui_assets/");
-    pAssetLibrary->SetSystemDirectoryName(mediaDirectory + "System/");
-    pAssetLibrary->SetFontDirectoryName(mediaDirectory + "gui_assets/Font/");
-
-    CPUTGuiController *pGUI = CPUTGetGuiController();
-    pGUI->Initialize("guimaterial_dds_16", "arial_16.fnt");
-
-    pGUI->SetCallback(this);
-
-    pAssetLibrary->SetMediaDirectoryName(mediaDirectory);
-
-    mpShadowRenderTarget = CPUTRenderTargetDepth::Create();
-    mpShadowRenderTarget->CreateRenderTarget(std::string("$shadow_depth"), SHADOW_WIDTH_HEIGHT, SHADOW_WIDTH_HEIGHT, DXGI_FORMAT_D32_FLOAT);
-
-    CPUTMaterial* pDebugMaterial = pAssetLibrary->GetMaterial("%sprite");
-    mpDebugSprite = CPUTSprite::Create(-1.0f, -1.0f, 0.5f, 0.5f, pDebugMaterial);
-    SAFE_RELEASE(pDebugMaterial);
-
-    mpCameraController = CPUTCameraControllerFPS::Create();
-    mpShadowCamera = CPUTCamera::Create(CPUT_ORTHOGRAPHIC);
-
-    pGUI->Resize(width, height);
-
-}
-
-

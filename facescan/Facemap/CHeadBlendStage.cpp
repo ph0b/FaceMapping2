@@ -26,7 +26,7 @@
 #include "CPUTSoftwareMesh.h"
 #include "CPipeline.h"
 #include "CPUTComputeShaderDX11.h"
-#include "../SampleUtil.h"
+#include "../FaceMappingUtil.h"
 #include "CPUTSprite.h"
 
 
@@ -100,12 +100,12 @@ void CHeadBlendStage::Execute(SHeadBlendStageInput *input)
 
 	BlendShaderConstantBuffer cb;
 
-	SetCodeTexture(0, input->GeneratedFaceColorMap);
-	SetCodeTexture(1, input->BaseHeadInfo->Textures[eBaseHeadTexture_ControlMap_Color]);
-	SetCodeTexture(2, input->BaseHeadInfo->Textures[eBaseHeadTexture_FeatureMap]);
-	SetCodeTexture(3, input->BaseHeadInfo->Textures[eBaseHeadTexture_ColorTransfer]);
-	SetCodeTexture(4, input->BaseHeadInfo->Textures[eBaseHeadTexture_Skin]);
-	SetCodeTexture(5, input->OtherHeadTexture);
+    SetCodeTexture(0, input->GeneratedFaceColorMap);
+    SetCodeTexture(1, input->BaseHeadInfo->Textures[eBaseHeadTexture_ControlMap_Color]);
+    SetCodeTexture(2, input->BaseHeadInfo->Textures[eBaseHeadTexture_FeatureMap]);
+    SetCodeTexture(3, input->BaseHeadInfo->Textures[eBaseHeadTexture_ColorTransfer]);
+    SetCodeTexture(4, input->BaseHeadInfo->Textures[eBaseHeadTexture_Skin]);
+    SetCodeTexture(5, input->OtherHeadTexture);
 	
 	cb.OtherHeadBlend = input->OtherHeadBlend;
 	
@@ -138,7 +138,7 @@ void CHeadBlendStage::Execute(SHeadBlendStageInput *input)
 	if ((input->Flags & PIPELINE_FLAG_SkipColorSeamFill) == 0)
 	{
 		mDiffuseRenderTarget2->SetRenderTarget(*input->RenderParams);
-		SetCodeTexture(0, mDiffuseRenderTarget->GetColorResourceView());
+        SetCodeTexture(0, mDiffuseRenderTarget->GetColorResourceView());
 		mFullscreenSprite->DrawSprite(*input->RenderParams, *mSeamFillMaterial);
 		mDiffuseRenderTarget2->RestoreRenderTarget(*input->RenderParams);
 		outputRT = mDiffuseRenderTarget2;

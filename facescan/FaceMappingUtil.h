@@ -24,10 +24,6 @@
 struct tObjModel;
 class CPUTSoftwareMesh;
 
-#ifndef DISABLE_RSSDK
-#include "pxcimage.h"
-#endif // #ifndef DISABLE_RSSDK
-
 struct SCodeTextureWrap
 {
 	ID3D11Texture2D *Texture;
@@ -36,35 +32,11 @@ struct SCodeTextureWrap
 	D3D11_TEXTURE2D_DESC Desc;
 };
 
-bool TextureWrap_Init(SCodeTextureWrap* wrap, D3D11_TEXTURE2D_DESC *desc);
-bool TextureWrap_AdjustSize(SCodeTextureWrap* wrap, int width, int height);
-void TextureWrap_Release(SCodeTextureWrap* wrap);
-
-#ifndef DISABLE_RSSDK
-void CopyPXCImageToTexture(PXCImage *srcImage, SCodeTextureWrap *dstTexture);
-#endif // #ifndef DISABLE_RSSDK
-
 const std::string &GetUserDataDirectory();
 const std::string &GetMyAssetsDirectory();
 
-void DebugPrintf(char *fmt, ...);
-
-void DebugPrintBeginFileCapture( const char *filename);
-void DebugPrintEndFileCapture();
-
-class ProfileBlockScoped
-{
-public:
-	ProfileBlockScoped( std::string blockName );
-	~ProfileBlockScoped();
-private:
-	uint64 mStartTime;
-	std::string mBlockName;
-};
-
-void SampleUtil_Init();
-void SampleUtil_Shutdown();
-
+void FaceMappingUtil_Init();
+void FaceMappingUtil_Shutdown();
 
 void SetCodeTexture(int index, ID3D11ShaderResourceView *srv);
 void SetCodeTexture(int index, SCodeTextureWrap *texture);
@@ -77,7 +49,6 @@ CPUTMaterial *GetMeshPreviewMaterial();
 class CPUTModel;
 CPUTModel *LoadObjAsCPUTModel(const char *objFilename);
 
-
 void DrawCube(CPUTRenderParameters &renderParams, float3 position, float size, CPUTColor4 color);
 void DrawBox(CPUTRenderParameters &renderParams, float3 position, float3 size, CPUTColor4 color);
 
@@ -86,17 +57,17 @@ void DrawQuadSC(CPUTRenderParameters &renderParams, float2 position, float size,
 class ViewportScoped
 {
 public:
-	ViewportScoped(ID3D11DeviceContext *context, D3D11_VIEWPORT *viewports, int count, CPUTRenderParameters *params = NULL);
-	~ViewportScoped();
+    ViewportScoped(ID3D11DeviceContext *context, D3D11_VIEWPORT *viewports, int count, CPUTRenderParameters *params = NULL);
+    ~ViewportScoped();
 
 private:
-	D3D11_VIEWPORT mStoredViewports[8];
-	UINT mStoredViewportCount;
-	ID3D11DeviceContext *mContext;
+    D3D11_VIEWPORT mStoredViewports[8];
+    UINT mStoredViewportCount;
+    ID3D11DeviceContext *mContext;
 
-	CPUTRenderParameters *mParams;
-	int mStoredParamWidth;
-	int mStoredParamHeight;
+    CPUTRenderParameters *mParams;
+    int mStoredParamWidth;
+    int mStoredParamHeight;
 };
 
 #define COMBINE1(X,Y) X##Y  // helper macro
