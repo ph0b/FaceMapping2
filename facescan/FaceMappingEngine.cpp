@@ -70,6 +70,24 @@ void FaceMappingEngine::SetDefaultTweaks()
     mTweaks.OtherHeadMesh = NULL;
 }
 
+void FaceMappingEngine::SetFaceOrientation(float yaw, float pitch, float roll){
+    mTweaks.FaceYaw = yaw;
+    mTweaks.FacePitch = pitch;
+    mTweaks.FaceRoll = roll;
+}
+
+void FaceMappingEngine::SetBlendColor1(float r, float g, float b){
+    mTweaks.BlendColor1 = CPUTColorFromBytes(r, g, b, 255);
+}
+
+void FaceMappingEngine::SetBlendColor2(float r, float g, float b){
+    mTweaks.BlendColor2 = CPUTColorFromBytes(r, g, b, 255);
+}
+
+void FaceMappingEngine::SetFaceZOffset(float offset){
+    mTweaks.DisplaceOffset = float3(0.0f, 0.0f, offset);
+}
+
 void FaceMappingEngine::SetDefaultDebug()
 {
     mShowMapLandmarks = true;
@@ -228,30 +246,30 @@ void FaceMappingEngine::addMorphParameters(CPUTAssetSet* headSet)
     addMorphParam("Other", "Neck Slope", 0.0f, "shape_chin_neck_slope", 0.0f, 1.0f, 0.0f, 1.0f);
 
 
-    // Add all the morph targets available.
-    for (int i = 0; i < (int)headSet->GetAssetCount(); i++)
-    {
-        CPUTRenderNode *node = NULL;
-        headSet->GetAssetByIndex(i, &node);
-        if (strstr(node->GetName().c_str(), ".mdl") && !strstr(node->GetName().c_str(), "Cshape"))
-        {
-            CPUTModel *model = (CPUTModel*)node;
-            CPUTMeshDX11 *mesh = (CPUTMeshDX11*)model->GetMesh(0);
-            if (mesh->GetVertexCount() == mBaseMesh.GetVertCount())
-            {
-                std::string modelName = CPUTFileSystem::basename(model->GetName(), true);
-                std::string name = modelName;
-                if (strncmp(name.c_str(), "shape_", 6) == 0)
-                {
-                    name = name.substr(6);
-                }
+    //    // Add all the morph targets available.
+    //    for (int i = 0; i < (int)headSet->GetAssetCount(); i++)
+    //    {
+    //        CPUTRenderNode *node = NULL;
+    //        headSet->GetAssetByIndex(i, &node);
+    //        if (strstr(node->GetName().c_str(), ".mdl") && !strstr(node->GetName().c_str(), "Cshape"))
+    //        {
+    //            CPUTModel *model = (CPUTModel*)node;
+    //            CPUTMeshDX11 *mesh = (CPUTMeshDX11*)model->GetMesh(0);
+    //            if (mesh->GetVertexCount() == mBaseMesh.GetVertCount())
+    //            {
+    //                std::string modelName = CPUTFileSystem::basename(model->GetName(), true);
+    //                std::string name = modelName;
+    //                if (strncmp(name.c_str(), "shape_", 6) == 0)
+    //                {
+    //                    name = name.substr(6);
+    //                }
 
-                addMorphParam("All Shapes", name.c_str(), 0.5f, modelName.c_str(), 0.0f, 1.0f, -5.0f, 5.0f);
-                addMorphParam("All Shapes Post", name.c_str(), 0.5f, modelName.c_str(), 0.0f, 1.0f, -5.0f, 5.0f);
-            }
-        }
-        SAFE_RELEASE(node);
-    }
+    //                addMorphParam("All Shapes", name.c_str(), 0.5f, modelName.c_str(), 0.0f, 1.0f, -5.0f, 5.0f);
+    //                addMorphParam("All Shapes Post", name.c_str(), 0.5f, modelName.c_str(), 0.0f, 1.0f, -5.0f, 5.0f);
+    //            }
+    //        }
+    //        SAFE_RELEASE(node);
+    //    }
 
     SMorphTweakParamDef def;
     def.Reset("Shape", "BMI", 0.5f);
@@ -409,6 +427,16 @@ void FaceMappingEngine::addMorphParam(const char *category, const char *name, fl
     mMorphParamDefs.push_back(def);
 }
 
+void FaceMappingEngine::setMorphParamWeight(int idx, float value)
+{
+    mActiveMorphParamWeights[idx] = value;
+}
+
+void FaceMappingEngine::setPostMorphParamWeight(int idx, float value)
+{
+    mActivePostMorphParamWeights[idx] = value;
+}
+
 void FaceMappingEngine::loadHair(CPUTAssetSet *set, const char *modelName, const char *displayName )
 {
     if(set!=NULL){
@@ -555,7 +583,29 @@ void FaceMappingEngine::ResetActiveMorphTargets(bool post)
     }
 }
 
+// Export the OBJ file
+void FaceMappingEngine::ExportOBJTo(std::string outFilename)
+{
+    OBJExporter meshExport(outFilename);
 
+    CPUTRenderParameters params = {};
+    meshExport.ExportModel(mDisplayHead, params, 0);
+    SHairDef *hairDef = (mCurrentHairIndex >= 0 && mCurrentHairIndex < (int)mHairDefs.size()) ? &mHairDefs[mCurrentHairIndex] : NULL;
+    if (hairDef != NULL)
+    {
+        meshExport.ExportModel(hairDef->Model, params, 0);
+    }
+    for (int i = 0; i < (int)mBeardEnabled.size(); i++)
+    {
+        if (mBeardEnabled[i])
+        {
+            meshExport.ExportModel(mBeardDefs[0].Model, params, 0);
+            break;
+        }
+    }
+
+    meshExport.Close();
+}
 
 
 void FaceMappingEngine::CreateMorphTargetEntries(std::vector<MorphTargetEntry> &list, std::vector<SMorphTweakParamDef> &defs, std::vector<float> &weights, bool post)

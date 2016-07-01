@@ -17,7 +17,6 @@
 #include "CPUTModel.h"
 #include "CPUTMesh.h"
 #include "CPUTMaterial.h"
-#include "FaceMappingUtil.h"
 #include "CPUTTexture.h"
 
 static uint32 gFaceScanUniqueId = 0;

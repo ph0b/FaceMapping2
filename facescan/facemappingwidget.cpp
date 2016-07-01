@@ -16,11 +16,11 @@ FaceMappingWidget::FaceMappingWidget(){
 
     mFMEngine->LoadContent();
 
-    loadFace(QCoreApplication::applicationDirPath() + QDir::separator() + "userdata" + QDir::separator() + "joe_sr300_1.obj");
+    //TODO: set default values, then call engine to compute adapted values to get, then set from widget (can even animate them).
 }
 
 QSize FaceMappingWidget::sizeHint() const{
-    return QSize(640,480);
+    return QSize(640,800);
 }
 
 FaceMappingWidget::~FaceMappingWidget() {
@@ -38,3 +38,42 @@ void FaceMappingWidget::loadFace(QString path)
 {
     mFMEngine->LoadFace(path.toStdString());
 }
+
+void FaceMappingWidget::storeHead(QString filename){
+    mFMEngine->ExportOBJTo(filename.toStdString());
+}
+
+void FaceMappingWidget::setMorphParamWeight(int idx, float weight)
+{
+    mFMEngine->setMorphParamWeight(idx, weight);
+}
+
+void FaceMappingWidget::setPostBMI(float weight)
+{
+    mFMEngine->setPostMorphParamWeight(0, weight);
+}
+
+void FaceMappingWidget::setPostOgre(float weight)
+{
+    mFMEngine->setPostMorphParamWeight(1, weight);
+}
+
+void FaceMappingWidget::setFaceOrientation(float yaw, float pitch, float roll){
+    mFMEngine->SetFaceOrientation(yaw, pitch, roll);
+}
+
+void FaceMappingWidget::setBlendColor1(QColor color)
+{
+    blendColor1 = color;
+    mFMEngine->SetBlendColor1(color.redF(), color.greenF(), color.blueF());
+}
+
+void FaceMappingWidget::setBlendColor2(QColor color){
+    blendColor2 = color;
+    mFMEngine->SetBlendColor2(color.redF(), color.greenF(), color.blueF());
+}
+
+void FaceMappingWidget::setFaceZOffset(float offset){
+    mFMEngine->SetFaceZOffset(offset);
+}
+

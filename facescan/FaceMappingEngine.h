@@ -153,6 +153,17 @@ public:
     void SetDefaultTweaks();
     void SetHairIndex(int hairIndex);
 
+    void setMorphParamWeight(int idx, float value);//TODO: switch to map and keys instead of vectors and indexes.
+
+    void setPostMorphParamWeight(int idx, float value);
+
+    void SetFaceOrientation(float yaw, float pitch, float roll);
+    void SetBlendColor1(float r, float g, float b);
+    void SetBlendColor2(float r, float g, float b);
+    void SetFaceZOffset(float offset);
+
+    void ExportOBJTo(std::string outFilename);
+
 protected:
     void loadLandmarkSet(CPUTAssetSet *landmarkSet);
     void loadCubeMap(std::string mediaDir);

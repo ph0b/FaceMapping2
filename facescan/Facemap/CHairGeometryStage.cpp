@@ -14,7 +14,6 @@
 // responsibility to update it.
 //--------------------------------------------------------------------------------------
 #include "CHairGeometryStage.h"
-#include "../FaceMappingUtil.h"
 
 CHairGeometryStage::CHairGeometryStage()
 {
