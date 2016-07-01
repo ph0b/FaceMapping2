@@ -20,9 +20,19 @@ class CPUTModel;
 class CPUTRenderTargetColor;
 class CPUTMeshDX11;
 class CPUTComputeShaderDX11;
+class CPUTTextureDX11;
 struct SBaseHeadInfo;
 class CPUTSoftwareMesh;
 class CPUTSprite;
+
+struct SCodeTextureWrap
+{
+    ID3D11Texture2D *Texture;
+    ID3D11Resource *Resource;
+    ID3D11ShaderResourceView *SRV;
+    D3D11_TEXTURE2D_DESC Desc;
+};
+
 #include "CPipeline.h"
 
 struct SHeadBlendStageInput
@@ -63,6 +73,8 @@ private:
 	void InitResources();
 	bool mIsInited;
 
+    static const int kCodeTexturesCount = 8;
+    CPUTTextureDX11 *mCodeTextures[kCodeTexturesCount];
 	CPUTMaterial *mBlendMaterial;
 	CPUTMeshDX11 *mRenderMesh;
 	CPUTRenderTargetColor *mDiffuseRenderTarget;
@@ -70,7 +82,10 @@ private:
 	CPUTComputeShaderDX11 *mPostComputeShader;
 	CPUTMaterial *mSeamFillMaterial;
 	CPUTSprite *mFullscreenSprite;
-	
+
+    void SetCodeTexture(int index, SCodeTextureWrap *texture);
+    void SetCodeTexture(int index, ID3D11ShaderResourceView *srv);
+    void SetCodeTexture(int index, CPUTTexture *texture);
 };
 
 #endif

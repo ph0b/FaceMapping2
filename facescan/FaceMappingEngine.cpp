@@ -35,13 +35,12 @@
 #include <dxgi1_3.h>
 #include <DXProgrammableCapture.h>
 
-const char *sPostBlendColorModes[] =
+inline float RemapRange(float value, float r1Min, float r1Max, float r2Min, float r2Max)
 {
-    "None",
-    "Colorize",
-    "Adjust",
-};
-static int cAssert3 = 3 / ((ARRAYSIZE(sPostBlendColorModes) == PostBlendColorMode_Count) ? 1 : 0);
+    float ratio = (value - r1Min) / (r1Max - r1Min);
+    ratio = floatClamp(ratio, 0.0f, 1.0f);
+    return r2Min + ratio * (r2Max - r2Min);
+}
 
 FaceMappingEngine::FaceMappingEngine():mpQDXWidget(NULL),
     mpFullscreenSprite(NULL),
@@ -177,6 +176,13 @@ void FaceMappingEngine::loadHeadModelAndAssets(std::string mediaDir)
     mDisplayHead = pAssetLibrary->FindModel("templateHeadModel", true);
 }
 
+CPUTTexture *FaceMappingEngine::LoadTexture(std::string &dir, const char *filename)
+{
+    std::string textureName;
+    CPUTFileSystem::CombinePath(dir, filename, &textureName);
+    return CPUTTexture::Create(std::string("dynamicLoad"), textureName, false);
+}
+
 void FaceMappingEngine::loadHeadTextures(std::string headDir)
 {
     mHeadInfo.BaseHeadMesh = &mBaseMesh;
@@ -203,42 +209,26 @@ void FaceMappingEngine::addMorphParameters(CPUTAssetSet* headSet)
     addMorphParam("Base Shape", "Shape 3", 0.0f, "shape_3", 0.0f, 1.0f, 0.0f, 1.0f);
     addMorphParam("Base Shape", "Width", 0.0f, "shape_width", 0.0f, 1.0f, 0.0f, 1.0f);
 
-    SMorphTweakParamDef def;
-    //TODO: use addMorphParam
-    def.Reset("Base Shape", "Roundness", 0.5f);
-    def.MorphParts.push_back(SMorphTweakParamPart("shape_round", 0.5f, 1.0f, 0.0f, 1.0f));
-    def.MorphParts.push_back(SMorphTweakParamPart("shape_square", 0.0f, 0.5f, 1.0f, 0.0f));
-    mMorphParamDefs.push_back(def);
+    addMorphParam("Base Shape", "Roundness", 0.5f, "shape_round", 0.5f, 1.0f, 0.0f, 1.0f,
+                  "shape_square", 0.0f, 0.5f, 1.0f, 0.0f);
 
-    def.Reset("Base Shape", "BMI", 0.5f);
-    def.MorphParts.push_back(SMorphTweakParamPart("shape_BMI_Heavy", 0.5f, 1.0f, 0.0f, 1.0f));
-    def.MorphParts.push_back(SMorphTweakParamPart("shape_BMI_Lean", 0.0f, 0.5f, 1.0f, 0.0f));
-    mMorphParamDefs.push_back(def);
+    addMorphParam("Base Shape", "BMI", 0.5f,"shape_BMI_Heavy", 0.5f, 1.0f, 0.0f, 1.0f,
+                  "shape_BMI_Lean", 0.0f, 0.5f, 1.0f, 0.0f);
 
-    def.Reset("Jaw", "Cheekbone", 0.0f);
-    def.MorphParts.push_back(SMorphTweakParamPart("shape_Cheekbone_Size", 0.0f, 1.0f, 0.0f, 1.0f));
-    mMorphParamDefs.push_back(def);
+    addMorphParam("Jaw", "Cheekbone", 0.0f, "shape_Cheekbone_Size", 0.0f, 1.0f, 0.0f, 1.0f);
 
-    def.Reset("Jaw", "Chin Protrude", 0.5f);
-    def.MorphParts.push_back(SMorphTweakParamPart("shape_chin_back", 0.0f, 0.5f, 1.0f, 0.0f));
-    def.MorphParts.push_back(SMorphTweakParamPart("shape_chin_front", 0.5f, 1.0f, 0.0f, 1.0f));
-    mMorphParamDefs.push_back(def);
+    addMorphParam("Jaw", "Chin Protrude", 0.5f, "shape_chin_back", 0.0f, 0.5f, 1.0f, 0.0f,
+                  "shape_chin_front", 0.5f, 1.0f, 0.0f, 1.0f);
 
-    def.Reset("Jaw", "Chin Level", 0.0f);
-    def.MorphParts.push_back(SMorphTweakParamPart("shape_chin_level", 0.0f, 1.0f, 0.0f, 1.0f));
-    mMorphParamDefs.push_back(def);
+    addMorphParam("Jaw", "Chin Level", 0.0f,"shape_chin_level", 0.0f, 1.0f, 0.0f, 1.0f);
 
-    def.Reset("Jaw", "Chin Width", 0.5f);
-    def.MorphParts.push_back(SMorphTweakParamPart("shape_chin_narrow", 0.0f, 0.5f, 1.0f, 0.0f));
-    def.MorphParts.push_back(SMorphTweakParamPart("shape_chin_width", 0.5f, 1.0f, 0.0f, 1.0f));
-    mMorphParamDefs.push_back(def);
+    addMorphParam("Jaw", "Chin Width", 0.5f,"shape_chin_narrow", 0.0f, 0.5f, 1.0f, 0.0f,
+                  "shape_chin_width", 0.5f, 1.0f, 0.0f, 1.0f);
 
-    def.Reset("Other", "Neck Slope", 0.0f);
-    def.MorphParts.push_back(SMorphTweakParamPart("shape_chin_neck_slope", 0.0f, 1.0f, 0.0f, 1.0f));
-    mMorphParamDefs.push_back(def);
+    addMorphParam("Other", "Neck Slope", 0.0f, "shape_chin_neck_slope", 0.0f, 1.0f, 0.0f, 1.0f);
+
 
     // Add all the morph targets available.
-
     for (int i = 0; i < (int)headSet->GetAssetCount(); i++)
     {
         CPUTRenderNode *node = NULL;
@@ -263,14 +253,30 @@ void FaceMappingEngine::addMorphParameters(CPUTAssetSet* headSet)
         SAFE_RELEASE(node);
     }
 
+    SMorphTweakParamDef def;
     def.Reset("Shape", "BMI", 0.5f);
     def.MorphParts.push_back(SMorphTweakParamPart("shape_BMI_Heavy", 0.5f, 1.0f, 0.0f, 1.0f));
     def.MorphParts.push_back(SMorphTweakParamPart("shape_BMI_Lean", 0.0f, 0.5f, 1.0f, 0.0f));
     mPostMorphParamDefs.push_back(def);
 
-    addMorphParam("Shape", "Ogre", 0.0f, "shape_Ogre", 0.0f, 1.0f, 0.0f, 1.0f);
-
+    def.Reset("Shape", "Ogre", 0.0f);
+    def.MorphParts.push_back(SMorphTweakParamPart("shape_Ogre", 0.0f, 1.0f, 0.0f, 1.0f));
+    mPostMorphParamDefs.push_back(def);
 }
+
+void FaceMappingEngine::LoadCPUTModelToSWMesh(CPUTAssetSet *set, const char *modelName, CPUTSoftwareMesh *outMesh)
+{
+    CPUTModel *model = NULL;
+    CPUTResult result = set->GetAssetByName(modelName, (CPUTRenderNode**)&model);
+    assert(result == CPUT_SUCCESS);
+
+    // get first mesh
+    CPUTMeshDX11 *dx11Mesh = (CPUTMeshDX11 *)model->GetMesh(0);
+    outMesh->CopyFromDX11Mesh(dx11Mesh);
+    outMesh->ApplyTransform(model->GetWorldMatrix());
+    SAFE_RELEASE(model);
+}
+
 
 void FaceMappingEngine::loadMorphTargets(CPUTAssetSet* headSet)
 {
@@ -312,7 +318,6 @@ void FaceMappingEngine::Create()
     int width, height;
     mpWindow->GetClientDimensions(&width, &height);
 
-    FaceMappingUtil_Init();
 
 
     mCPUTLandmarkModel = NULL;
@@ -336,15 +341,40 @@ void FaceMappingEngine::Create()
     cameraModelViewer->SetViewAngles(0, 0);
 }
 
+
+void FaceMappingEngine::SetCodeTexture(int index, ID3D11ShaderResourceView *srv)
+{
+    assert(index < kCodeTexturesCount);
+    mCodeTextures[index]->SetTextureAndShaderResourceView(NULL, srv);
+}
+
+void FaceMappingEngine::SetCodeTexture(int index, CPUTTexture *texture)
+{
+    assert(index < kCodeTexturesCount);
+    CPUTTextureDX11* dxTexture = (CPUTTextureDX11*)texture;
+    SetCodeTexture(index, dxTexture != NULL ? dxTexture->GetShaderResourceView() : NULL);
+}
+
+
 void FaceMappingEngine::LoadContent()
 {
+    CPUTAssetLibrary *pAssetLibrary = CPUTAssetLibrary::GetAssetLibrary();
+
+    for (int i = 0; i < kCodeTexturesCount; i++)
+    {
+        char textureName[64];
+        snprintf(textureName, sizeof(textureName), "$CODETEXTURE%d", i);
+        std::string textureNameString = std::string(textureName);
+        mCodeTextures[i] = (CPUTTextureDX11*)CPUTTextureDX11::Create(textureNameString, NULL, NULL);
+        pAssetLibrary->AddTexture(textureName, "", "", mCodeTextures[i]);
+    }
+
     std::string executableDirectory;
     CPUTFileSystem::GetExecutableDirectory(&executableDirectory);
 
     std::string mediaDir;
     CPUTFileSystem::GetMediaDirectory(&mediaDir);
 
-    CPUTAssetLibrary *pAssetLibrary = CPUTAssetLibrary::GetAssetLibrary();
     pAssetLibrary->SetSystemDirectoryName(mediaDir + "/System/");
     pAssetLibrary->SetMediaDirectoryName(mediaDir);
 
@@ -365,6 +395,17 @@ void FaceMappingEngine::addMorphParam(const char *category, const char *name, fl
     SMorphTweakParamDef def;
     def.Reset(category, name, defaultValue);
     def.MorphParts.push_back(SMorphTweakParamPart(modelName, range1, range2, apply1, apply2));
+    mMorphParamDefs.push_back(def);
+}
+
+void FaceMappingEngine::addMorphParam(const char *category, const char *name, float defaultValue,
+                                      const char *modelName, float range1, float range2, float apply1, float apply2,
+                                      const char *modelName_2, float range1_2, float range2_2, float apply1_2, float apply2_2)
+{
+    SMorphTweakParamDef def;
+    def.Reset(category, name, defaultValue);
+    def.MorphParts.push_back(SMorphTweakParamPart(modelName, range1, range2, apply1, apply2));
+    def.MorphParts.push_back(SMorphTweakParamPart(modelName_2, range1_2, range2_2, apply1_2, apply2_2));
     mMorphParamDefs.push_back(def);
 }
 
@@ -436,7 +477,11 @@ void FaceMappingEngine::Shutdown()
     }
     mMorphTargetMap.clear();
 
-    FaceMappingUtil_Shutdown();
+    for (int i = 0; i < kCodeTexturesCount; i++)
+    {
+        SetCodeTexture(i, (CPUTTexture*)NULL);
+        SAFE_RELEASE(mCodeTextures[i]);
+    }
 
     // Note: these two are defined in the base.  We release them because we addref them.
     SAFE_RELEASE(mpCamera);
@@ -511,12 +556,7 @@ void FaceMappingEngine::ResetActiveMorphTargets(bool post)
 }
 
 
-inline float RemapRange(float value, float r1Min, float r1Max, float r2Min, float r2Max)
-{
-    float ratio = (value - r1Min) / (r1Max - r1Min);
-    ratio = floatClamp(ratio, 0.0f, 1.0f);
-    return r2Min + ratio * (r2Max - r2Min);
-}
+
 
 void FaceMappingEngine::CreateMorphTargetEntries(std::vector<MorphTargetEntry> &list, std::vector<SMorphTweakParamDef> &defs, std::vector<float> &weights, bool post)
 {

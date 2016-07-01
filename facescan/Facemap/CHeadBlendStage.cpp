@@ -26,7 +26,6 @@
 #include "CPUTSoftwareMesh.h"
 #include "CPipeline.h"
 #include "CPUTComputeShaderDX11.h"
-#include "../FaceMappingUtil.h"
 #include "CPUTSprite.h"
 
 
@@ -56,6 +55,26 @@ mIsInited(false)
 	ZeroMemory(&Output, sizeof(Output));
 }
 
+void CHeadBlendStage::SetCodeTexture(int index, CPUTTexture *texture)
+{
+    assert(index < sizeof(mCodeTextures));
+    CPUTTextureDX11* dxTexture = (CPUTTextureDX11*)texture;
+    SetCodeTexture(index, dxTexture != NULL ? dxTexture->GetShaderResourceView() : NULL);
+}
+
+void CHeadBlendStage::SetCodeTexture(int index, ID3D11ShaderResourceView *srv)
+{
+    assert(index < sizeof(mCodeTextures));
+    mCodeTextures[index]->SetTextureAndShaderResourceView(NULL, srv);
+}
+
+void CHeadBlendStage::SetCodeTexture(int index, SCodeTextureWrap *texture)
+{
+    assert(index < sizeof(mCodeTextures));
+    mCodeTextures[index]->SetTextureAndShaderResourceView(NULL, (texture != NULL) ? texture->SRV : NULL);
+}
+
+
 CHeadBlendStage::~CHeadBlendStage()
 {
 	SAFE_DELETE(mDiffuseRenderTarget);
@@ -64,7 +83,7 @@ CHeadBlendStage::~CHeadBlendStage()
 	SAFE_DELETE(mFullscreenSprite);
 	SAFE_RELEASE(mSeamFillMaterial);
 	SAFE_RELEASE(mRenderMesh);
-	SAFE_RELEASE(Output.OutputDiffuse);
+    SAFE_RELEASE(Output.OutputDiffuse);
 }
 
 void CHeadBlendStage::InitResources()
@@ -81,9 +100,17 @@ void CHeadBlendStage::InitResources()
 	pAssetLibrary->SetRootRelativeMediaDirectory("MyAssets");
 	mBlendMaterial = pAssetLibrary->GetMaterial("sculpt");
 	mSeamFillMaterial = pAssetLibrary->GetMaterial("seamfill");
-	mFullscreenSprite = CPUTSprite::Create(-1.0f, -1.0f, 2.0f, 2.0f, NULL);
-	
+
+    mFullscreenSprite = CPUTSprite::Create(-1.0f, -1.0f, 2.0f, 2.0f, NULL);
 	mRenderMesh = CPUTMeshDX11::Create();
+
+
+    for (int i = 0; i < kCodeTexturesCount; i++)
+    {
+        char textureName[64];
+        snprintf(textureName, sizeof(textureName), "$CODETEXTURE%d", i);
+        mCodeTextures[i] = (CPUTTextureDX11*) pAssetLibrary->GetTexture(textureName, false, true);
+    }
 
 	mIsInited = true;
 }

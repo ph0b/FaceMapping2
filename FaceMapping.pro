@@ -96,7 +96,6 @@ SOURCES +=\
     facescan/ObjLoader.cpp \
     facescan/windowsMain.cpp \
     CPUT/middleware/stb/stb_image.c \
-    facescan/FaceMappingUtil.cpp \
     facescan/facemappingwidget.cpp \
     facescan/FaceMappingEngine.cpp
 
@@ -189,7 +188,6 @@ HEADERS  +=  CPUT/include/android/CPUTTimerLinux.h \
     facescan/CFaceModel.h \
     facescan/OBJExporter.h \
     facescan/ObjLoader.h \
-    facescan/FaceMappingUtil.h \
     facescan/facemappingwidget.h \
     facescan/FaceMappingEngine.h
 

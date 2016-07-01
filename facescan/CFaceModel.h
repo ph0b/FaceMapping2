@@ -66,7 +66,8 @@ private:
 	CPUTTexture *mTexture;
 	
 	bool LoadLandmarks( const std::string &filename, std::vector<float3> &outMap, int formatVersion = 0 );
-	
+
+    void CopyOBJDataToSoftwareMesh(tObjModel *objModel, CPUTSoftwareMesh *softwareMesh);
 };
 
 #endif // __OBJ_MODEL__

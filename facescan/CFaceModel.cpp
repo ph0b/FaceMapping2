@@ -37,6 +37,34 @@ CFaceModel::~CFaceModel()
 uint32 CFaceModel::GetUniqueId() { return mUniqueId; }
 void CFaceModel::FlagUpdated() { mUniqueId = gFaceScanUniqueId++; }
 
+void CFaceModel::CopyOBJDataToSoftwareMesh(tObjModel *objModel, CPUTSoftwareMesh *softwareMesh)
+{
+    int vertexCount = (int)objModel->m_vertices.size();
+    int indexCount = (int)objModel->m_indices.size();
+
+    softwareMesh->FreeAll();
+    softwareMesh->UpdateVertexCount(vertexCount);
+    softwareMesh->UpdateIndexCount(indexCount);
+    softwareMesh->AddComponent(eSMComponent_Position);
+    softwareMesh->AddComponent(eSMComponent_Normal);
+    softwareMesh->AddComponent(eSMComponent_Tex1);
+
+    if (sizeof(ObjIndexInt) == sizeof(uint32) && softwareMesh->IB != NULL)
+        memcpy(softwareMesh->IB, &objModel->m_indices[0], sizeof(uint32) * indexCount);
+
+
+    if (vertexCount > 0){
+        tVertex *srcV = &objModel->m_vertices[0];
+        for (int i = 0; i < vertexCount; i++)
+        {
+            softwareMesh->Pos[i] = float3(srcV->x, srcV->y, srcV->z);
+            softwareMesh->Normal[i] = float3(srcV->nx, srcV->ny, srcV->nz);
+            softwareMesh->Tex[i] = float2(srcV->u, srcV->v);
+            srcV++;
+        }
+    }
+}
+
 void CFaceModel::LoadObjFilename(const std::string &filename, bool landmarks)
 {
 	AABBMin = float3(10000.0f, 10000.0f, 10000.0f);

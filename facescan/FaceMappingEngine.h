@@ -34,22 +34,8 @@
 #include "CPUTModel.h"
 #include "CPUTSoftwareMesh.h"
 
-
-#include "FaceMappingUtil.h"
 #include "CFaceModel.h"
 #include "FaceMap/CPipeline.h"
-
-
-
-
-enum DebugTextureView
-{
-    DebugTextureView_None,
-    DebugTextureView_DisplacementColor,
-    DebugTextureView_DisplacementDepth,
-    DebugTextureView_FinalHeadDiffuse,
-    DebugTextureView_Count
-};
 
 enum DebugHeadDisplayTexture
 {
@@ -175,7 +161,11 @@ protected:
     void addMorphParameters(CPUTAssetSet* headSet);
     void loadMorphTargets(CPUTAssetSet* headSet);
 
-private:
+    CPUTTexture *LoadTexture(std::string &dir, const char *filename);
+    void SetCodeTexture(int index, CPUTTexture *texture);
+    void SetCodeTexture(int index, ID3D11ShaderResourceView *srv);
+
+    void LoadCPUTModelToSWMesh(CPUTAssetSet *set, const char *modelName, CPUTSoftwareMesh *outMesh);
 
     void SetDefaultDebug();
 
@@ -188,11 +178,17 @@ private:
     void UpdateLayout(CPUTRenderParameters &renderParams);
     void CreateMorphTargetEntries(std::vector<MorphTargetEntry> &list, std::vector<SMorphTweakParamDef> &defs, std::vector<float> &weights, bool post);
     void addMorphParam(const char *category, const char *name, float defaultValue, const char *modelName, float range1, float range2, float apply1, float apply2);
+    void addMorphParam(const char *category, const char *name, float defaultValue, const char *modelName, float range1, float range2, float apply1, float apply2, const char *modelName_2, float range1_2, float range2_2, float apply1_2, float apply2_2);
 
-    const UINT SHADOW_WIDTH_HEIGHT = 2048;
+
+private:
+    static const UINT SHADOW_WIDTH_HEIGHT = 2048;
+    static const int kCodeTexturesCount = 8;
 
     QDXWidget             *mpQDXWidget;
     CPUTSprite			*mpFullscreenSprite;
+
+    CPUTTextureDX11 *mCodeTextures[kCodeTexturesCount];
 
     float                  mfElapsedTime;
     CPUTCameraController  *mpCameraController;
@@ -256,7 +252,6 @@ private:
     bool mShowMapLandmarks;
     bool mUseOrthoCamera;
     bool mFullscreenDebugTextureViewer;
-    DebugTextureView mDebugTextureView;
     DebugHeadDisplayTexture mDebugHeadDisplayTextureView;
     bool mRenderLandmarkMesh;
     bool mRenderMorphedLandmarkMesh;
