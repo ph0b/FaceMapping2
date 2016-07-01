@@ -45,36 +45,19 @@ int main(int argc, char **argv)
     QTimer::singleShot(0,[&] {
         fmw.loadFace(a.applicationDirPath() + "/userdata/joe_sr300_1.obj");
 
-        /*  0 ("Front Profile", "Head Width", 0.5f
-         *  1 ("Front Profile", "Eye Area Width", 0.5f
-         *  2 ("Front Profile", "Cheekbone Width", 0.5f
-         *  3 ("Front Profile", "OCC Width", 0.5f
-         *  4 ("Front Profile", "Jaw Width", 0.5f
-         *  5 ("Front Profile", "Jaw Level", 0.5f
-         *  6 ("Front Profile", "Chin Width", 0.5f
-         *  7 ("Front Profile", "Neck Width", 0.5f
-         *  8 ("Base Shape", "Shape 1", 0.0f
-         *  9 ("Base Shape", "Shape 2", 0.0f
-         *  10 ("Base Shape", "Shape 3", 0.0f
-         *  11 ("Base Shape", "Width", 0.0f
-         *  12 ("Base Shape", "Roundness", 0.5f
-         *  13 ("Base Shape", "BMI", 0.5f
-         *  14 ("Jaw", "Cheekbone", 0.0f, "shape_Cheekbone_Size", 0.0f, 1.0f, 0.0f, 1.0f);
-         *  15 ("Jaw", "Chin Protrude", 0.5f
-         *  16 ("Jaw", "Chin Level", 0.0f
-         *  17 ("Jaw", "Chin Width", 0.5f
-         *  18 ("Other", "Neck Slope", 0.0f
-        */
-        fmw.setMorphParamWeight(5, 0.8f);
+        fmw.setMorphParamWeight(FaceMappingWidget::MorphParamIndexes::Jaw_Level, 0.6f);
 
-        // fmw.setBlendColor1(QColor(10,10,10));
-        //    fmw.setPostBMI(0.8);
-        //    fmw.setPostOgre(0.8);
-        //    fmw.setFaceOrientation(0.f,0.f,0.f);
-        //    fmw.setFaceZOffset(-3.5f);
-        fmw.setHairIndex(4);
+        //fmw.setBlendColor1(QColor(10,10,10));
+        //fmw.setPostBMI(0.8);
+        //fmw.setPostOgre(0.8);
+        //fmw.setFaceOrientation(0.f,0.f,0.f);
+        //fmw.setFaceZOffset(-3.5f);
+
+        fmw.setHairIndex(FaceMappingWidget::HairIndexes::Helmet_Short);
 
         animation.start();
+
+        //fmw.storeHead(a.applicationDirPath() + "/userdata/generated.obj");
     });
 
     return a.exec();

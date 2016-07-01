@@ -219,32 +219,36 @@ void FaceMappingEngine::addMorphParameters(CPUTAssetSet* headSet)
     addMorphParam("Front Profile", "OCC Width", 0.5f, "shape_OCC_width", 0.0f, 1.0f, -2.0f, 2.0f);
     addMorphParam("Front Profile", "Jaw Width", 0.5f, "shape_jaw_width", 0.0f, 1.0f, -2.0f, 2.0f);
     addMorphParam("Front Profile", "Jaw Level", 0.5f, "shape_jaw_level", 0.0f, 1.0f, -2.0f, 2.0f);
-    addMorphParam("Front Profile", "Chin Width", 0.5f, "shape_chin_width", 0.0f, 1.0f, -2.0f, 2.0f);
+    //addMorphParam("Front Profile", "Chin Width", 0.5f, "shape_chin_width", 0.0f, 1.0f, -2.0f, 2.0f);
+    addMorphParam("Front Profile", "Chin Width", 0.5f,"shape_chin_narrow", 0.0f, 0.5f, -1.0f, 0.0f,
+                  "shape_chin_width", 0.5f, 1.0f, 0.0f, 2.0f);
     addMorphParam("Front Profile", "Neck Width", 0.5f, "shape_neck_girth", 0.0f, 1.0f, -2.0f, 2.0f);
 
     addMorphParam("Base Shape", "Shape 1", 0.0f, "shape_1", 0.0f, 1.0f, 0.0f, 1.0f);
     addMorphParam("Base Shape", "Shape 2", 0.0f, "shape_2", 0.0f, 1.0f, 0.0f, 1.0f);
     addMorphParam("Base Shape", "Shape 3", 0.0f, "shape_3", 0.0f, 1.0f, 0.0f, 1.0f);
     addMorphParam("Base Shape", "Width", 0.0f, "shape_width", 0.0f, 1.0f, 0.0f, 1.0f);
-
-    addMorphParam("Base Shape", "Roundness", 0.5f, "shape_round", 0.5f, 1.0f, 0.0f, 1.0f,
-                  "shape_square", 0.0f, 0.5f, 1.0f, 0.0f);
-
+    addMorphParam("Base Shape", "Roundness", 0.5f, "shape_round", 0.5f, 1.0f, 0.0f, 0.5f,
+                  "shape_square", 0.0f, 0.5f, 0.5f, 0.0f);
     addMorphParam("Base Shape", "BMI", 0.5f,"shape_BMI_Heavy", 0.5f, 1.0f, 0.0f, 1.0f,
                   "shape_BMI_Lean", 0.0f, 0.5f, 1.0f, 0.0f);
 
     addMorphParam("Jaw", "Cheekbone", 0.0f, "shape_Cheekbone_Size", 0.0f, 1.0f, 0.0f, 1.0f);
-
     addMorphParam("Jaw", "Chin Protrude", 0.5f, "shape_chin_back", 0.0f, 0.5f, 1.0f, 0.0f,
                   "shape_chin_front", 0.5f, 1.0f, 0.0f, 1.0f);
-
     addMorphParam("Jaw", "Chin Level", 0.0f,"shape_chin_level", 0.0f, 1.0f, 0.0f, 1.0f);
 
-    addMorphParam("Jaw", "Chin Width", 0.5f,"shape_chin_narrow", 0.0f, 0.5f, 1.0f, 0.0f,
-                  "shape_chin_width", 0.5f, 1.0f, 0.0f, 1.0f);
-
     addMorphParam("Other", "Neck Slope", 0.0f, "shape_chin_neck_slope", 0.0f, 1.0f, 0.0f, 1.0f);
+    addMorphParam("Other", "Jaw Angle", 0.5f,"shape_Mouth_Open", 0.0f, 0.5f, 0.8f, -0.8f);
+    addMorphParam("Other", "Brow Thickness", 0.5f, "shape_Brow_Thin", 0.0f, 0.5f, 1.5f, 0.0f,
+                  "shape_Brow_Thick", 0.5f, 1.0f, 0.0f, 1.5f);
+    addMorphParam("Other", "Brow Height", 0.5f, "shape_Brow_Height", 0.0f, 1.0f, -2.0f, 2.0f);
+    addMorphParam("Other", "Chin Front", 0.5f, "shape_Chin_Back", 0.0f, 0.5f, 1.0f, 0.0f,
+                  "shape_Chin_Front", 0.5f, 1.0f, 0.0f, 1.0f);
+    addMorphParam("Other", "Chin Level", 0.5f, "shape_Chin_Level", 0.0f, 1.0f, -1.0f, 1.0f);
+    addMorphParam("Base Shape", "Ovalness", 0.5f, "shape_Oval", 0.0f, 1.0f, -1.5f, 1.5f);
 
+    //TODO: add Forehed parameters, Ears, OCC, Orbits
 
     //    // Add all the morph targets available.
     //    for (int i = 0; i < (int)headSet->GetAssetCount(); i++)

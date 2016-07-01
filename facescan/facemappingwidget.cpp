@@ -50,16 +50,28 @@ void FaceMappingWidget::setMorphParamWeight(int idx, float weight)
 
 void FaceMappingWidget::setPostBMI(float weight)
 {
-    mFMEngine->setPostMorphParamWeight(0, weight);
+   mFMEngine->setPostMorphParamWeight(PostMorphParamIndexes::Post_BMI, weight);
 }
 
 void FaceMappingWidget::setPostOgre(float weight)
 {
-    mFMEngine->setPostMorphParamWeight(1, weight);
+    mFMEngine->setPostMorphParamWeight(PostMorphParamIndexes::Post_Ogre, weight);
 }
 
 void FaceMappingWidget::setFaceOrientation(float yaw, float pitch, float roll){
     mFMEngine->SetFaceOrientation(yaw, pitch, roll);
+}
+
+void FaceMappingWidget::setFaceOrientationYaw(float yaw){
+    mFMEngine->SetFaceOrientation(yaw, faceOrientationPitch, faceOrientationRoll);
+}
+
+void FaceMappingWidget::setFaceOrientationPitch(float pitch){
+    mFMEngine->SetFaceOrientation(faceOrientationYaw, pitch, faceOrientationRoll);
+}
+
+void FaceMappingWidget::setFaceOrientationRoll(float roll){
+    mFMEngine->SetFaceOrientation(faceOrientationYaw, faceOrientationPitch, roll);
 }
 
 void FaceMappingWidget::setBlendColor1(QColor color)
