@@ -54,6 +54,7 @@ int main(int argc, char **argv)
         //fmw.setFaceZOffset(-3.5f);
 
         fmw.setHairIndex(FaceMappingWidget::HairIndexes::Helmet_Short);
+        fmw.setBeardIndex(FaceMappingWidget::BeardIndexes::Moustache);
 
         animation.start();
 

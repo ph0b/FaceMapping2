@@ -34,6 +34,11 @@ void FaceMappingWidget::setHairIndex(int idx)
     mFMEngine->SetHairIndex(idx);
 }
 
+void FaceMappingWidget::setBeardIndex(int idx, bool enable)
+{
+    mFMEngine->SetBeardIndex(idx, enable);
+}
+
 void FaceMappingWidget::loadFace(QString path)
 {
     mFMEngine->LoadFace(path.toStdString());

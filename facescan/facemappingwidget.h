@@ -49,11 +49,14 @@ public:
                                        Jaw_Angle, Brow_Thickness, Brow_Height, Chin_Front,
                                        Chin_Level, Ovalness}; };
 
-    struct HairIndexes {enum { HairLess = 0, Short, Medium, Long, Helmet_Short, Helmet_2, Helmet_3, Helmet_4};};
+    struct HairIndexes {enum { HairLess = 0, Short, Medium, Long, Helmet_Short, Helmet_2, Helmet_3, Helmet_4 };};
 
+    struct BeardIndexes {enum { Chops = 0, Goatee, Moustache, SideBurns, SoulPatch };};
 
 public slots:
     void setHairIndex(int idx);
+    void setBeardIndex(int idx, bool enable=true);
+
     void loadFace(QString path);
     void storeHead(QString filename);
 

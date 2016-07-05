@@ -90,12 +90,9 @@ void FaceMappingEngine::SetFaceZOffset(float offset){
 
 void FaceMappingEngine::SetDefaultDebug()
 {
-    mShowMapLandmarks = true;
     mRenderLandmarkMesh = false;
     mRenderMorphedLandmarkMesh = false;
-    mRenderHeadLandmarks = false;
     mShowWireframe = false;
-    mUseOrthoCamera = false;
     mSkipFaceFit = false;
     mHideCubeMap = false;
     mSkipFaceDisplace = false;
@@ -104,7 +101,6 @@ void FaceMappingEngine::SetDefaultDebug()
 
     mDirectionalLightHeight = 0.0f;
     mDirectionalLightAngle = 0.0f;
-    mDirectionalLightIntensity = 0.7f;
     mAmbientLightIntensity = 0.3f;
 
 }
@@ -186,10 +182,10 @@ void FaceMappingEngine::loadHeadModelAndAssets(std::string mediaDir)
 
     CPUTAssetSet *beardSet = mHeadAssetScene->GetAssetSet(10);
     loadBeardPart(beardSet, "Chops.mdl", "Chops");
+    loadBeardPart(beardSet, "goatee.mdl", "Goatee");
     loadBeardPart(beardSet, "moustache.mdl", "Mustache");
     loadBeardPart(beardSet, "SideBurns.mdl", "Sideburns");
     loadBeardPart(beardSet, "SoulPatch.mdl", "Soulpatch");
-    loadBeardPart(beardSet, "goatee.mdl", "Goatee");
 
     mDisplayHead = pAssetLibrary->FindModel("templateHeadModel", true);
 }
@@ -475,6 +471,12 @@ void FaceMappingEngine::SetHairIndex(int hairIndex)
     {
         mCurrentHair.CopyFrom(def->SWMesh);
     }
+    mForceRebuildAll = true;
+}
+
+void FaceMappingEngine::SetBeardIndex(int beardIndex, bool enable)
+{
+    mBeardEnabled[beardIndex] = enable;
     mForceRebuildAll = true;
 }
 

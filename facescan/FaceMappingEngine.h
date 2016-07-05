@@ -152,6 +152,7 @@ public:
 
     void SetDefaultTweaks();
     void SetHairIndex(int hairIndex);
+    void SetBeardIndex(int beardIndex, bool enable);
 
     void setMorphParamWeight(int idx, float value);//TODO: switch to map and keys instead of vectors and indexes.
 
@@ -260,23 +261,17 @@ private:
     int mCurrentHairIndex;
     bool mHideCubeMap;
     bool mShowWireframe;
-    bool mShowMapLandmarks;
-    bool mUseOrthoCamera;
-    bool mFullscreenDebugTextureViewer;
-    DebugHeadDisplayTexture mDebugHeadDisplayTextureView;
     bool mRenderLandmarkMesh;
     bool mRenderMorphedLandmarkMesh;
-    bool mRenderHeadLandmarks;
 
     CPUTSoftwareMesh mOtherHead;
     CPUTTexture *mOtherHeadTexture;
 
-    CPUTSprite *mDebugTextureSprite;
+    DebugHeadDisplayTexture mDebugHeadDisplayTextureView;
 
     // Lighting
     float mDirectionalLightHeight;
     float mDirectionalLightAngle;
-    float mDirectionalLightIntensity;
     float mAmbientLightIntensity;
 };
 
