@@ -1,8 +1,9 @@
 #include "facemappingwidget.h"
 #include <QBoxLayout>
 #include <QDir>
+#include <QtConcurrent>
 
-FaceMappingWidget::FaceMappingWidget(){
+FaceMappingWidget::FaceMappingWidget(): mFMEngine(NULL), mFMEngineTerminationRequired(false) {
     setLayout(new QHBoxLayout);
 
     mFMEngine = new FaceMappingEngine();
@@ -13,19 +14,49 @@ FaceMappingWidget::FaceMappingWidget(){
     ASSERT(CPUTSUCCESS(result), "CPUT Error creating window and context.");
     mFMEngine->Create();
     layout()->addWidget(&mFMEngine->GetQWidget());
-
-    mFMEngine->LoadContent();
-
-    //TODO: set default values, then call engine to compute adapted values to get, then set from widget (can even animate them).
 }
+
+void FaceMappingWidget::startLoadingAssets(){
+    QtConcurrent::run([=] {
+        // Initialize COM (needed for WIC)
+        HRESULT hr = S_OK;
+        if (FAILED(hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED)))
+        {
+            wprintf(L"Failed to initialize COM (%08X)\n", hr);
+            return 1;
+        }
+
+        mFMEngine->LoadContent();
+
+        emit assetsHaveLoaded();
+    });
+}
+
+void FaceMappingWidget::startProcessingMessageLoop(){
+    mFMEngineLoopResult = QtConcurrent::run([=] {
+        while(!this->mFMEngineTerminationRequired)
+            this->mFMEngine->ProcessMessageLoopEvents();
+    });
+}
+
+void FaceMappingWidget::stopRenderingLoop()
+{
+    mFMEngineTerminationRequired = true;
+    mFMEngineLoopResult.waitForFinished();
+}
+
 
 QSize FaceMappingWidget::sizeHint() const{
     return QSize(640,800);
 }
 
 FaceMappingWidget::~FaceMappingWidget() {
+
+    stopRenderingLoop();
+
     mFMEngine->ReleaseResources();
     mFMEngine->DeviceShutdown();
+
     delete mFMEngine;
 }
 
@@ -39,28 +70,38 @@ void FaceMappingWidget::setBeardIndex(int idx, bool enable)
     mFMEngine->SetBeardIndex(idx, enable);
 }
 
-void FaceMappingWidget::loadFace(QString path)
+void FaceMappingWidget::startLoadingFace(QString path)
 {
-    mFMEngine->LoadFace(path.toStdString());
+    QtConcurrent::run([=] {
+
+        mFMEngine->LoadFace(path.toStdString());
+        //TODO: set default values, then call engine to compute adapted values to get, then set from widget (can even animate them).
+
+        emit faceHasLoaded();
+    });
 }
 
-void FaceMappingWidget::storeHead(QString filename){
-    mFMEngine->ExportOBJTo(filename.toStdString());
+void FaceMappingWidget::startExportingHead(QString filename){
+    QtConcurrent::run([=] {
+        mFMEngine->ExportOBJTo(filename.toStdString());
+        emit headHasBeenExported(filename);
+    });
 }
 
 void FaceMappingWidget::setMorphParamWeight(int idx, float weight)
 {
-    mFMEngine->setMorphParamWeight(idx, weight);
+    mFMEngine->SetMorphParamWeight(idx, weight);
 }
 
 void FaceMappingWidget::setPostBMI(float weight)
 {
-   mFMEngine->setPostMorphParamWeight(PostMorphParamIndexes::Post_BMI, weight);
+    if(mFMEngine->IsFaceLoaded())
+    mFMEngine->SetPostMorphParamWeight(PostMorphParamIndexes::Post_BMI, weight);
 }
 
 void FaceMappingWidget::setPostOgre(float weight)
 {
-    mFMEngine->setPostMorphParamWeight(PostMorphParamIndexes::Post_Ogre, weight);
+    mFMEngine->SetPostMorphParamWeight(PostMorphParamIndexes::Post_Ogre, weight);
 }
 
 void FaceMappingWidget::setFaceOrientation(float yaw, float pitch, float roll){

@@ -32,6 +32,7 @@ public:
 
     virtual bool init();
     virtual void update();
+    void processMessageLoopEvents();
 
 
 	std::vector<std::function<LRESULT(HWND, UINT, WPARAM, LPARAM)>> QDXWidget::mWndProc;
@@ -44,8 +45,6 @@ public:
 
     void RegisterCallbackMouseEvent(std::function<CPUTEventHandledCode(int x, int y, int wheel, CPUTMouseState state, CPUTEventID message)> callback) { mMouseEventCallbacks.push_back(callback); }
 	std::vector<std::function<CPUTEventHandledCode(int x, int y, int wheel, CPUTMouseState state, CPUTEventID message)>> mMouseEventCallbacks;
-
-	virtual bool nativeEvent( QByteArray const& eventType, void* message, long* result ) override;
 
 	void resizeEvent( QResizeEvent* event );
 

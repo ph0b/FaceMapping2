@@ -26,6 +26,8 @@ CHairGeometryStage::~CHairGeometryStage()
 
 void CHairGeometryStage::Execute(SHairGeometryStageInput *input)
 {
+    if(input->Hair->GetVertCount()==0) return;
+
 	if (mMappedHairVerts.size() != input->Hair->GetVertCount() || input->ClearCachedProjections)
 	{
 		ProjectMeshVerticesOntoMeshTriangles(input->Hair, input->BaseHead, mMappedHairVerts, 8.0f, 1.0f);
@@ -38,7 +40,7 @@ void CHairGeometryStage::Execute(SHairGeometryStageInput *input)
 	// Move the hair vertices to match the morphed head
 	// foreach hair vertex vertHair
 	//   newVertHair = sum( bary[0..2] * vHeadDeformed[0..2] + d[vertHair] * normalHead[0..2]
-	int hairVertCount = (int)mMappedHairVerts.size();
+    int hairVertCount = mMappedHairVerts.size();
     UINT32 *pIndices   = input->DeformedHead->IB;
     float3 *pPositions = input->DeformedHead->Pos;
     float3 *pNormals   = input->DeformedHead->Normal;

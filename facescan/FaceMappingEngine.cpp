@@ -42,12 +42,14 @@ inline float RemapRange(float value, float r1Min, float r1Max, float r2Min, floa
     return r2Min + ratio * (r2Max - r2Min);
 }
 
-FaceMappingEngine::FaceMappingEngine():mpQDXWidget(NULL),
+FaceMappingEngine::FaceMappingEngine():mDX11deviceAccess(QMutex::Recursive),mpQDXWidget(NULL),
     mpFullscreenSprite(NULL),
     mfElapsedTime(0.0),
     mpCameraController(NULL),
     mpShadowCameraSet(NULL),
-    mpShadowRenderTarget(NULL)
+    mpShadowRenderTarget(NULL),
+    mForceRebuildAll(false),
+    mFaceLoaded(false)
 {
 
 }
@@ -88,7 +90,7 @@ void FaceMappingEngine::SetFaceZOffset(float offset){
     mTweaks.DisplaceOffset = float3(0.0f, 0.0f, offset);
 }
 
-void FaceMappingEngine::SetDefaultDebug()
+void FaceMappingEngine::setDefaultDebug()
 {
     mRenderLandmarkMesh = false;
     mRenderMorphedLandmarkMesh = false;
@@ -155,7 +157,7 @@ void FaceMappingEngine::loadHeadModelAndAssets(std::string mediaDir)
     mHeadInfo.LandmarkMesh.ApplyTransform(mCPUTLandmarkModel->GetWorldMatrix());
 
     CPUTAssetSet *headSet = mHeadAssetScene->GetAssetSet(2);
-    LoadCPUTModelToSWMesh(headSet, "Base_Head.mdl", &mBaseMesh);
+    loadCPUTModelToSWMesh(headSet, "Base_Head.mdl", &mBaseMesh);
 
     loadHair(NULL, NULL, "Hairless");
 
@@ -190,7 +192,7 @@ void FaceMappingEngine::loadHeadModelAndAssets(std::string mediaDir)
     mDisplayHead = pAssetLibrary->FindModel("templateHeadModel", true);
 }
 
-CPUTTexture *FaceMappingEngine::LoadTexture(std::string &dir, const char *filename)
+CPUTTexture *FaceMappingEngine::loadTexture(std::string &dir, const char *filename)
 {
     std::string textureName;
     CPUTFileSystem::CombinePath(dir, filename, &textureName);
@@ -200,11 +202,11 @@ CPUTTexture *FaceMappingEngine::LoadTexture(std::string &dir, const char *filena
 void FaceMappingEngine::loadHeadTextures(std::string headDir)
 {
     mHeadInfo.BaseHeadMesh = &mBaseMesh;
-    mHeadInfo.Textures[eBaseHeadTexture_ControlMap_Displacement] = LoadTexture(headDir, "DisplacementControlMap.png");
-    mHeadInfo.Textures[eBaseHeadTexture_ControlMap_Color] = LoadTexture(headDir, "ColorControlMap.png");
-    mHeadInfo.Textures[eBaseHeadTexture_FeatureMap] = LoadTexture(headDir, "FeatureMap.png");
-    mHeadInfo.Textures[eBaseHeadTexture_ColorTransfer] = LoadTexture(headDir, "ColorTransferMap.png");
-    mHeadInfo.Textures[eBaseHeadTexture_Skin] = LoadTexture(headDir, "SkinMask.png");
+    mHeadInfo.Textures[eBaseHeadTexture_ControlMap_Displacement] = loadTexture(headDir, "DisplacementControlMap.png");
+    mHeadInfo.Textures[eBaseHeadTexture_ControlMap_Color] = loadTexture(headDir, "ColorControlMap.png");
+    mHeadInfo.Textures[eBaseHeadTexture_FeatureMap] = loadTexture(headDir, "FeatureMap.png");
+    mHeadInfo.Textures[eBaseHeadTexture_ColorTransfer] = loadTexture(headDir, "ColorTransferMap.png");
+    mHeadInfo.Textures[eBaseHeadTexture_Skin] = loadTexture(headDir, "SkinMask.png");
 }
 
 void FaceMappingEngine::addMorphParameters(CPUTAssetSet* headSet)
@@ -282,7 +284,7 @@ void FaceMappingEngine::addMorphParameters(CPUTAssetSet* headSet)
     mPostMorphParamDefs.push_back(def);
 }
 
-void FaceMappingEngine::LoadCPUTModelToSWMesh(CPUTAssetSet *set, const char *modelName, CPUTSoftwareMesh *outMesh)
+void FaceMappingEngine::loadCPUTModelToSWMesh(CPUTAssetSet *set, const char *modelName, CPUTSoftwareMesh *outMesh)
 {
     CPUTModel *model = NULL;
     CPUTResult result = set->GetAssetByName(modelName, (CPUTRenderNode**)&model);
@@ -310,7 +312,7 @@ void FaceMappingEngine::loadMorphTargets(CPUTAssetSet* headSet)
                 if (mMorphTargetMap.find(itPart->MorphTargetName) == mMorphTargetMap.end())
                 {
                     std::string morphModelName = itPart->MorphTargetName + ".mdl";
-                    LoadCPUTModelToSWMesh(headSet, morphModelName.c_str(), &tempMesh);
+                    loadCPUTModelToSWMesh(headSet, morphModelName.c_str(), &tempMesh);
 
                     CMorphTarget *morphTarget = new CMorphTarget();
                     BuildMorphTarget(&mBaseMesh, &tempMesh, morphTarget);
@@ -324,6 +326,7 @@ void FaceMappingEngine::loadMorphTargets(CPUTAssetSet* headSet)
 
 void FaceMappingEngine::Create()
 {
+
     CPUT_DX11::CreateResources();
     mpQDXWidget = static_cast<QDXWidget*>(mpWindow);
 
@@ -343,7 +346,7 @@ void FaceMappingEngine::Create()
     mOtherHeadTexture = NULL;
     mLastTweaks.Scale = 0.0f;
 
-    SetDefaultDebug();
+    setDefaultDebug();
     SetDefaultTweaks();
 
     CPUTCameraModelViewer *cameraModelViewer = new CPUTCameraModelViewer();
@@ -360,22 +363,23 @@ void FaceMappingEngine::Create()
 }
 
 
-void FaceMappingEngine::SetCodeTexture(int index, ID3D11ShaderResourceView *srv)
+void FaceMappingEngine::setCodeTexture(int index, ID3D11ShaderResourceView *srv)
 {
     assert(index < kCodeTexturesCount);
     mCodeTextures[index]->SetTextureAndShaderResourceView(NULL, srv);
 }
 
-void FaceMappingEngine::SetCodeTexture(int index, CPUTTexture *texture)
+void FaceMappingEngine::setCodeTexture(int index, CPUTTexture *texture)
 {
     assert(index < kCodeTexturesCount);
     CPUTTextureDX11* dxTexture = (CPUTTextureDX11*)texture;
-    SetCodeTexture(index, dxTexture != NULL ? dxTexture->GetShaderResourceView() : NULL);
+    setCodeTexture(index, dxTexture != NULL ? dxTexture->GetShaderResourceView() : NULL);
 }
 
 
 void FaceMappingEngine::LoadContent()
 {
+    QMutexLocker lock(&mDX11deviceAccess);
     CPUTAssetLibrary *pAssetLibrary = CPUTAssetLibrary::GetAssetLibrary();
 
     for (int i = 0; i < kCodeTexturesCount; i++)
@@ -427,12 +431,12 @@ void FaceMappingEngine::addMorphParam(const char *category, const char *name, fl
     mMorphParamDefs.push_back(def);
 }
 
-void FaceMappingEngine::setMorphParamWeight(int idx, float value)
+void FaceMappingEngine::SetMorphParamWeight(int idx, float value)
 {
     mActiveMorphParamWeights[idx] = value;
 }
 
-void FaceMappingEngine::setPostMorphParamWeight(int idx, float value)
+void FaceMappingEngine::SetPostMorphParamWeight(int idx, float value)
 {
     mActivePostMorphParamWeights[idx] = value;
 }
@@ -484,6 +488,7 @@ void FaceMappingEngine::SetBeardIndex(int beardIndex, bool enable)
 
 void FaceMappingEngine::Shutdown()
 {
+    QMutexLocker lock(&mDX11deviceAccess);
     CPUT_DX11::Shutdown();
 
     SAFE_DELETE(mCameraController);
@@ -513,7 +518,7 @@ void FaceMappingEngine::Shutdown()
 
     for (int i = 0; i < kCodeTexturesCount; i++)
     {
-        SetCodeTexture(i, (CPUTTexture*)NULL);
+        setCodeTexture(i, (CPUTTexture*)NULL);
         SAFE_RELEASE(mCodeTextures[i]);
     }
 
@@ -532,6 +537,8 @@ QWidget& FaceMappingEngine::GetQWidget(){
 
 void FaceMappingEngine::LoadFace(const std::string &filename)
 {
+    QMutexLocker lock(&mDX11deviceAccess);
+
     mObjFilename = filename;
     mFaceModel.LoadObjFilename(filename);
 
@@ -541,12 +548,14 @@ void FaceMappingEngine::LoadFace(const std::string &filename)
     CPUTFileSystem::CombinePath(matName, "displace_map_render.mtl", &matName);
 
     mForceRebuildAll = true;
+    mFaceLoaded = (mFaceModel.GetMesh()->GetVertCount() > 0);
 }
 
 CPUTEventHandledCode FaceMappingEngine::HandleKeyboardEvent(CPUTKey key, CPUTKeyState state)
 {
     if (mCameraController != NULL)
     {
+        QMutexLocker lock(&mDX11deviceAccess);
         mCameraController->HandleKeyboardEvent(key, state);
     }
     return CPUT_EVENT_HANDLED;
@@ -556,6 +565,7 @@ CPUTEventHandledCode FaceMappingEngine::HandleMouseEvent(int x, int y, int wheel
 {
     if (mCameraController != NULL)
     {
+        QMutexLocker lock(&mDX11deviceAccess);
         return mCameraController->HandleMouseEvent(x, y, wheel, state, message);
     }
     return CPUT_EVENT_UNHANDLED;
@@ -565,13 +575,16 @@ void FaceMappingEngine::Update(double dt)
 {
     if (mCameraController != NULL)
     {
+        QMutexLocker lock(&mDX11deviceAccess);
         mCameraController->Update(dt);
     }
 }
 
 void FaceMappingEngine::ResizeWindow(UINT width, UINT height)
 {
-    CPUT_DX11::ResizeWindow( width, height );
+    QMutexLocker lock(&mDX11deviceAccess);
+
+    CPUT_DX11::ResizeWindow( width, height ); //TODO: do in background thread.
 
     // Resize any application-specific render targets here
     if( mpCamera )
@@ -579,7 +592,7 @@ void FaceMappingEngine::ResizeWindow(UINT width, UINT height)
 
 }
 
-void FaceMappingEngine::ResetActiveMorphTargets(bool post)
+void FaceMappingEngine::resetActiveMorphTargets(bool post)
 {
     std::vector<SMorphTweakParamDef> &list = post ? mPostMorphParamDefs : mMorphParamDefs;
     std::vector<float> &weights = post ? mActivePostMorphParamWeights : mActiveMorphParamWeights;
@@ -592,6 +605,8 @@ void FaceMappingEngine::ResetActiveMorphTargets(bool post)
 // Export the OBJ file
 void FaceMappingEngine::ExportOBJTo(std::string outFilename)
 {
+    QMutexLocker lock(&mDX11deviceAccess);
+
     OBJExporter meshExport(outFilename);
 
     CPUTRenderParameters params = {};
@@ -614,7 +629,7 @@ void FaceMappingEngine::ExportOBJTo(std::string outFilename)
 }
 
 
-void FaceMappingEngine::CreateMorphTargetEntries(std::vector<MorphTargetEntry> &list, std::vector<SMorphTweakParamDef> &defs, std::vector<float> &weights, bool post)
+void FaceMappingEngine::createMorphTargetEntries(std::vector<MorphTargetEntry> &list, std::vector<SMorphTweakParamDef> &defs, std::vector<float> &weights, bool post)
 {
     for (int i = 0; i < (int)defs.size(); i++)
     {
@@ -637,11 +652,17 @@ void FaceMappingEngine::CreateMorphTargetEntries(std::vector<MorphTargetEntry> &
 
 bool FaceMappingEngine::IsFaceLoaded()
 {
-    return mFaceModel.GetMesh()->GetVertCount() > 0;
+    return mFaceLoaded;
+}
+
+void FaceMappingEngine::ProcessMessageLoopEvents(){
+    QMutexLocker lock(&mDX11deviceAccess);
+    mpQDXWidget->processMessageLoopEvents();
 }
 
 void FaceMappingEngine::Render(double deltaSeconds)
 {
+    QMutexLocker lock(&mDX11deviceAccess);
 
     CPUTRenderParameters renderParams;
     int windowWidth, windowHeight;
@@ -706,8 +727,8 @@ void FaceMappingEngine::Render(double deltaSeconds)
         }
 
         mTweaks.MorphTargetEntries.clear();
-        CreateMorphTargetEntries(mTweaks.MorphTargetEntries, mMorphParamDefs, mActiveMorphParamWeights, false);
-        CreateMorphTargetEntries(mTweaks.MorphTargetEntries, mPostMorphParamDefs, mActivePostMorphParamWeights, true);
+        createMorphTargetEntries(mTweaks.MorphTargetEntries, mMorphParamDefs, mActiveMorphParamWeights, false);
+        createMorphTargetEntries(mTweaks.MorphTargetEntries, mPostMorphParamDefs, mActivePostMorphParamWeights, true);
 
         input.HairInfo.clear();
         SHairDef *hairDef = (mCurrentHairIndex >= 0 && mCurrentHairIndex < (int)mHairDefs.size()) ? &mHairDefs[mCurrentHairIndex] : NULL;

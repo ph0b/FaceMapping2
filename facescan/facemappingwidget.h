@@ -2,6 +2,7 @@
 #define FACEMAPPINGWIDGET_H
 
 #include "FaceMappingEngine.h"
+#include <QFuture>
 
 class FaceMappingWidget: public QWidget
 {
@@ -22,6 +23,8 @@ class FaceMappingWidget: public QWidget
 
 private:
     FaceMappingEngine* mFMEngine;
+    bool mFMEngineTerminationRequired;
+    QFuture<void> mFMEngineLoopResult;
     QColor blendColor1;
     QColor blendColor2;
 
@@ -57,8 +60,9 @@ public slots:
     void setHairIndex(int idx);
     void setBeardIndex(int idx, bool enable=true);
 
-    void loadFace(QString path);
-    void storeHead(QString filename);
+    void startLoadingAssets();
+    void startLoadingFace(QString path);
+    void startExportingHead(QString filename);
 
     void setMorphParamWeight(int idx, float weight);
     void setPostBMI(float weight);
@@ -72,6 +76,14 @@ public slots:
 
     void setBlendColor1(QColor color);
     void setBlendColor2(QColor color);
+
+    void startProcessingMessageLoop();
+    void stopRenderingLoop();
+
+signals:
+    void assetsHaveLoaded();
+    void faceHasLoaded();
+    void headHasBeenExported(QString);
 };
 
 #endif // FACEMAPPINGWIDGET_H

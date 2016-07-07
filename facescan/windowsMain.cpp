@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     animation.setDuration(2000);
     animation.setStartValue(0.0);
     animation.setEndValue(1.0);
-    QObject::connect(&animation, &QPropertyAnimation::finished, [&]{
+    QObject::connect(&animation, &QPropertyAnimation::finished, &fmw, [&animation]{
         if (animation.direction() == QPropertyAnimation::Backward) {
             animation.setDirection(QPropertyAnimation::Forward);
         } else {
@@ -41,25 +41,27 @@ int main(int argc, char **argv)
         }
         animation.start();
     });
+    animation.start();
 
-    QTimer::singleShot(0,[&] {
-        fmw.loadFace(a.applicationDirPath() + "/userdata/joe_sr300_1.obj");
 
-        fmw.setMorphParamWeight(FaceMappingWidget::MorphParamIndexes::Jaw_Level, 0.6f);
-
-        //fmw.setBlendColor1(QColor(10,10,10));
-        //fmw.setPostBMI(0.8);
-        //fmw.setPostOgre(0.8);
-        //fmw.setFaceOrientation(0.f,0.f,0.f);
-        //fmw.setFaceZOffset(-3.5f);
-
-        fmw.setHairIndex(FaceMappingWidget::HairIndexes::Helmet_Short);
-        fmw.setBeardIndex(FaceMappingWidget::BeardIndexes::Moustache);
-
-        animation.start();
-
-        //fmw.storeHead(a.applicationDirPath() + "/userdata/generated.obj");
+    QObject::connect(&fmw, &FaceMappingWidget::assetsHaveLoaded, &fmw, [&fmw]{
+        fmw.startLoadingFace(QApplication::applicationDirPath() + "/userdata/joe_sr300_1.obj");
     });
+
+    QObject::connect(&fmw, &FaceMappingWidget::faceHasLoaded, &fmw, [&fmw]{
+        QTimer::singleShot(1000, &fmw, [&fmw] {
+            fmw.setMorphParamWeight(FaceMappingWidget::MorphParamIndexes::Jaw_Level, 0.6f);
+            fmw.setHairIndex(FaceMappingWidget::HairIndexes::Helmet_2);
+            fmw.setBeardIndex(FaceMappingWidget::BeardIndexes::Moustache);
+        });
+
+        QTimer::singleShot(10000, &fmw, [&fmw] {
+            fmw.startExportingHead(QApplication::applicationDirPath() + "/userdata/generated.obj");
+        });
+    });
+
+    fmw.startLoadingAssets();
+    fmw.startProcessingMessageLoop();
 
     return a.exec();
 }

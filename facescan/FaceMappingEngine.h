@@ -154,9 +154,9 @@ public:
     void SetHairIndex(int hairIndex);
     void SetBeardIndex(int beardIndex, bool enable);
 
-    void setMorphParamWeight(int idx, float value);//TODO: switch to map and keys instead of vectors and indexes.
+    void SetMorphParamWeight(int idx, float value);
 
-    void setPostMorphParamWeight(int idx, float value);
+    void SetPostMorphParamWeight(int idx, float value);
 
     void SetFaceOrientation(float yaw, float pitch, float roll);
     void SetBlendColor1(float r, float g, float b);
@@ -164,6 +164,8 @@ public:
     void SetFaceZOffset(float offset);
 
     void ExportOBJTo(std::string outFilename);
+
+    void ProcessMessageLoopEvents();
 
 protected:
     void loadLandmarkSet(CPUTAssetSet *landmarkSet);
@@ -173,22 +175,20 @@ protected:
     void addMorphParameters(CPUTAssetSet* headSet);
     void loadMorphTargets(CPUTAssetSet* headSet);
 
-    CPUTTexture *LoadTexture(std::string &dir, const char *filename);
-    void SetCodeTexture(int index, CPUTTexture *texture);
-    void SetCodeTexture(int index, ID3D11ShaderResourceView *srv);
+    CPUTTexture *loadTexture(std::string &dir, const char *filename);
+    void setCodeTexture(int index, CPUTTexture *texture);
+    void setCodeTexture(int index, ID3D11ShaderResourceView *srv);
 
-    void LoadCPUTModelToSWMesh(CPUTAssetSet *set, const char *modelName, CPUTSoftwareMesh *outMesh);
+    void loadCPUTModelToSWMesh(CPUTAssetSet *set, const char *modelName, CPUTSoftwareMesh *outMesh);
 
-    void SetDefaultDebug();
+    void setDefaultDebug();
 
-    void ResetTweaks();
-    void ResetActiveMorphTargets(bool post);
+    void resetActiveMorphTargets(bool post);
 
     void loadHair(CPUTAssetSet *set, const char *modelName, const char *displayName );
     void loadBeardPart(CPUTAssetSet *beardSet, const char *modelName, const char *displayName);
 
-    void UpdateLayout(CPUTRenderParameters &renderParams);
-    void CreateMorphTargetEntries(std::vector<MorphTargetEntry> &list, std::vector<SMorphTweakParamDef> &defs, std::vector<float> &weights, bool post);
+    void createMorphTargetEntries(std::vector<MorphTargetEntry> &list, std::vector<SMorphTweakParamDef> &defs, std::vector<float> &weights, bool post);
     void addMorphParam(const char *category, const char *name, float defaultValue, const char *modelName, float range1, float range2, float apply1, float apply2);
     void addMorphParam(const char *category, const char *name, float defaultValue, const char *modelName, float range1, float range2, float apply1, float apply2, const char *modelName_2, float range1_2, float range2_2, float apply1_2, float apply2_2);
 
@@ -196,6 +196,8 @@ protected:
 private:
     static const UINT SHADOW_WIDTH_HEIGHT = 2048;
     static const int kCodeTexturesCount = 8;
+
+    QMutex mDX11deviceAccess;
 
     QDXWidget             *mpQDXWidget;
     CPUTSprite			*mpFullscreenSprite;
@@ -252,6 +254,7 @@ private:
     CPipelineOutput mPipelineOutput;
 
     bool mForceRebuildAll;
+    bool mFaceLoaded;
 
     bool mSkipFaceFit;
     bool mSkipFaceDisplace;

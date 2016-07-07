@@ -47,6 +47,13 @@ bool QDXWidget::init()
 
 void QDXWidget::update()
 {
+    // we're calling updates from its own thread now
+    //processMessageLoopEvents();
+
+}
+
+void QDXWidget::processMessageLoopEvents()
+{
     // trigger render and other calls
     for (const auto &callBack : mLoopEventCallbacks) {
         callBack();
@@ -68,21 +75,6 @@ void QDXWidget::keyPressEvent(QKeyEvent* event) {
     if(handledCode == CPUT_EVENT_UNHANDLED) {
         QWidget::keyReleaseEvent(event);
     }
-}
-
-bool QDXWidget::nativeEvent( QByteArray const& eventType, void* message, long* result ) {
-
-    MSG* msg = ( MSG* )message;
-
-    if( !mWndProc.empty() ) {
-        for( auto c : mWndProc ) {
-            if( c( msg->hwnd, msg->message, msg->wParam, msg->lParam ) ) {
-                return 1;
-            }
-        }
-    }
-
-    return false;
 }
 
 void QDXWidget::resizeEvent( QResizeEvent* event ) {
