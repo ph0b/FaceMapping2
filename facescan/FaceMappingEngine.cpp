@@ -582,14 +582,11 @@ void FaceMappingEngine::Update(double dt)
 
 void FaceMappingEngine::ResizeWindow(UINT width, UINT height)
 {
-    QMutexLocker lock(&mDX11deviceAccess);
-
-    CPUT_DX11::ResizeWindow( width, height ); //TODO: do in background thread.
-
-    // Resize any application-specific render targets here
-    if( mpCamera )
-        mpCamera->SetAspectRatio(((float)width)/((float)height));
-
+    if(width!=mRenderingWidth || height!=mRenderingHeight){
+        mRenderingWidth = width;
+        mRenderingHeight = height;
+        mRenderingSizeHasChanged = true;
+    }
 }
 
 void FaceMappingEngine::resetActiveMorphTargets(bool post)
@@ -664,9 +661,17 @@ void FaceMappingEngine::Render(double deltaSeconds)
 {
     QMutexLocker lock(&mDX11deviceAccess);
 
+    if(mRenderingSizeHasChanged){
+        mRenderingSizeHasChanged = false;
+        CPUT_DX11::ResizeWindow( mRenderingWidth, mRenderingHeight );
+
+        // Resize any application-specific render targets here
+        if( mpCamera ) mpCamera->SetAspectRatio(((float)mRenderingWidth)/((float)mRenderingHeight));
+    }
+
     CPUTRenderParameters renderParams;
-    int windowWidth, windowHeight;
-    mpWindow->GetClientDimensions( &windowWidth, &windowHeight);
+    // int windowWidth, windowHeight;
+    // mpWindow->GetClientDimensions( &windowWidth, &windowHeight);
 
     {
         renderParams.mpShadowCamera = NULL;
@@ -676,8 +681,8 @@ void FaceMappingEngine::Render(double deltaSeconds)
         //Animation
         renderParams.mpSkinningData = (CPUTBuffer*)mpSkinningDataConstantBuffer;
 
-        renderParams.mWidth = windowWidth;
-        renderParams.mHeight = windowHeight;
+        renderParams.mWidth = mRenderingWidth;
+        renderParams.mHeight = mRenderingHeight;
         renderParams.mRenderOnlyVisibleModels = false;
 
         //*******************************
@@ -685,8 +690,8 @@ void FaceMappingEngine::Render(double deltaSeconds)
         //*******************************
         UpdatePerFrameConstantBuffer(renderParams, deltaSeconds);
 
-        renderParams.mWidth = windowWidth;
-        renderParams.mHeight = windowHeight;
+        renderParams.mWidth = mRenderingWidth;
+        renderParams.mHeight = mRenderingHeight;
         renderParams.mpCamera = mpCamera;
         renderParams.mpShadowCamera = mpShadowCamera;
         UpdatePerFrameConstantBuffer(renderParams, deltaSeconds);
@@ -791,7 +796,7 @@ void FaceMappingEngine::Render(double deltaSeconds)
         SAFE_RELEASE(mat);
 
         renderParams.mpCamera = (CPUTCamera*)mCameraController->GetCamera();
-        renderParams.mpCamera->SetAspectRatio((float) windowWidth / (float)windowHeight);
+        renderParams.mpCamera->SetAspectRatio((float) mRenderingWidth / (float)mRenderingHeight);
 
         // Update per frame constants
         {

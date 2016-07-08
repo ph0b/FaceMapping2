@@ -276,6 +276,10 @@ private:
     float mDirectionalLightHeight;
     float mDirectionalLightAngle;
     float mAmbientLightIntensity;
+
+    int mRenderingWidth = 640;
+    int mRenderingHeight = 480;
+    bool mRenderingSizeHasChanged = true;
 };
 
 #endif
