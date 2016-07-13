@@ -555,17 +555,15 @@ CPUTEventHandledCode FaceMappingEngine::HandleKeyboardEvent(CPUTKey key, CPUTKey
 {
     if (mCameraController != NULL)
     {
-        QMutexLocker lock(&mDX11deviceAccess);
-        mCameraController->HandleKeyboardEvent(key, state);
+        return mCameraController->HandleKeyboardEvent(key, state);
     }
-    return CPUT_EVENT_HANDLED;
+    return CPUT_EVENT_UNHANDLED;
 }
 
 CPUTEventHandledCode FaceMappingEngine::HandleMouseEvent(int x, int y, int wheel, CPUTMouseState state, CPUTEventID message)
 {
     if (mCameraController != NULL)
     {
-        QMutexLocker lock(&mDX11deviceAccess);
         return mCameraController->HandleMouseEvent(x, y, wheel, state, message);
     }
     return CPUT_EVENT_UNHANDLED;
