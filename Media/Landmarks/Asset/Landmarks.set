@@ -1,4 +1,4 @@
-// Created with FBXConvert.exe: Tue Mar 29 13:36:56 2016
+// Created with FBXConvert.exe: Wed Jul 06 09:40:12 2016
 [node 0]
 type = null
 name = Landmark000
@@ -857,5 +857,5 @@ matrixRow3 = 3.3215184211731 5.28911209106445 -7.33482789993286 1
 scale = 32 32.00000000000001 32.00000000000001
 rotation = -1.629206849429465e-007 0 0
 position = 3.3215184211731 5.28911209106445 -7.33482789993286
-//Duration: ( 66548100 ns)
-// FBXConvert.exe Finished: Tue Mar 29 13:36:56 2016
+//Duration: ( 186358400 ns)
+// FBXConvert.exe Finished: Wed Jul 06 09:40:12 2016

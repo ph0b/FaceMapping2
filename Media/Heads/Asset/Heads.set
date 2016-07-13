@@ -13,7 +13,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 1]
 type = model
 name = shape_Mouth_Open
@@ -28,7 +27,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 2]
 type = model
 name = shape_3
@@ -43,7 +41,6 @@ position = 0 0 -0
 BoundingBoxCenter = -8.58306884765625e-006 0.1577186584472656 0.09268951416015625 
 BoundingBoxHalf = 8.795941352844238 10.51185417175293 15.90473175048828 
 meshcount = 1
-material0 = Default
 [node 3]
 type = model
 name = shape_1
@@ -58,7 +55,6 @@ position = 0 0 -0
 BoundingBoxCenter = -4.291534423828125e-006 0.3569941520690918 0.007440567016601563 
 BoundingBoxHalf = 9.057566165924072 10.33115148544312 15.98998069763184 
 meshcount = 1
-material0 = Default
 [node 4]
 type = model
 name = shape_2
@@ -73,7 +69,6 @@ position = 0 0 -0
 BoundingBoxCenter = -4.291534423828125e-006 0.3434352874755859 -0.00179290771484375 
 BoundingBoxHalf = 9.057562351226807 10.34470653533936 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 5]
 type = model
 name = shape_BMI_Heavy
@@ -88,7 +83,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.156132698059082 -0.00179290771484375 
 BoundingBoxHalf = 9.08664608001709 10.77632522583008 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 6]
 type = model
 name = shape_BMI_Lean
@@ -103,7 +97,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 7]
 type = model
 name = shape_Brow_Height
@@ -118,7 +111,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 8]
 type = model
 name = shape_Brow_Thick
@@ -133,7 +125,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 9]
 type = model
 name = shape_Brow_Thin
@@ -148,7 +139,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 10]
 type = model
 name = shape_Cheekbone_Size
@@ -163,7 +153,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 11]
 type = model
 name = shape_Chin_Back
@@ -178,7 +167,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 12]
 type = model
 name = shape_Chin_Front
@@ -193,7 +181,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 13]
 type = model
 name = shape_Chin_Level
@@ -208,7 +195,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 14]
 type = model
 name = shape_Chin_Narrow
@@ -223,7 +209,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 15]
 type = model
 name = shape_Chin_Neck_Slope
@@ -238,7 +223,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 16]
 type = model
 name = shape_Chin_Width
@@ -253,7 +237,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 17]
 type = model
 name = shape_Ear_Level_Down
@@ -268,7 +251,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 8.976187705993652 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 18]
 type = model
 name = shape_Ear_Level_Up
@@ -283,7 +265,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.087967872619629 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 19]
 type = model
 name = shape_Ear_Lobe_Size
@@ -298,7 +279,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 20]
 type = model
 name = shape_Ear_Rotate_Forward
@@ -313,7 +293,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.550539016723633 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 21]
 type = model
 name = shape_Ear_Rotate_Y
@@ -328,7 +307,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.116565704345703 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 22]
 type = model
 name = shape_Ear_Size_Horizontal
@@ -343,7 +321,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.162155151367188 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 23]
 type = model
 name = shape_Ear_Size_Vertical
@@ -358,7 +335,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.082921981811523 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 24]
 type = model
 name = shape_Forehead_Height
@@ -373,7 +349,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.01892375946044922 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 16.01634502410889 
 meshcount = 1
-material0 = Default
 [node 25]
 type = model
 name = shape_Forehead_Slope
@@ -388,7 +363,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 26]
 type = model
 name = shape_Forehead_Width
@@ -403,7 +377,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 27]
 type = model
 name = shape_Jaw_Level
@@ -418,7 +391,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 28]
 type = model
 name = shape_Jaw_Width
@@ -433,7 +405,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 29]
 type = model
 name = shape_Neck_Girth
@@ -448,7 +419,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 30]
 type = model
 name = shape_OCC_Depth
@@ -463,7 +433,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.4834432601928711 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 11.10363578796387 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 31]
 type = model
 name = shape_OCC_Roundness
@@ -478,7 +447,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.5972628593444824 -0.01324081420898438 
 BoundingBoxHalf = 9.062287330627441 11.21745538711548 16.01066207885742 
 meshcount = 1
-material0 = Default
 [node 32]
 type = model
 name = shape_OCC_Width
@@ -493,7 +461,6 @@ position = 0 0 -0
 BoundingBoxCenter = 2.86102294921875e-006 0.3537945747375488 -0.00179290771484375 
 BoundingBoxHalf = 9.099249839782715 10.97398710250855 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 33]
 type = model
 name = shape_Orbit_Width
@@ -508,7 +475,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 34]
 type = model
 name = shape_Oval
@@ -523,7 +489,6 @@ position = 0 0 -0
 BoundingBoxCenter = -1.430511474609375e-006 0.04082155227661133 -0.02573776245117188 
 BoundingBoxHalf = 9.102087497711182 10.66101408004761 16.02315902709961 
 meshcount = 1
-material0 = Default
 [node 35]
 type = model
 name = shape_Round
@@ -538,7 +503,6 @@ position = 0 0 -0
 BoundingBoxCenter = -3.337860107421875e-006 0.04082155227661133 -0.02573776245117188 
 BoundingBoxHalf = 9.170935153961182 10.66101408004761 16.02315902709961 
 meshcount = 1
-material0 = Default
 [node 36]
 type = model
 name = shape_Square
@@ -553,7 +517,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 37]
 type = model
 name = shape_Width
@@ -568,7 +531,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04897737503051758 0.0001382827758789063 
 BoundingBoxHalf = 9.471461296081543 10.66916990280151 15.99728298187256 
 meshcount = 1
-material0 = Default
 [node 38]
 type = model
 name = shape_Nose_F
@@ -583,7 +545,6 @@ position = 0 0 -0
 BoundingBoxCenter = 0 0.04110288619995117 -0.00179290771484375 
 BoundingBoxHalf = 9.062287330627441 10.66129541397095 15.99921417236328 
 meshcount = 1
-material0 = Default
 [node 39]
 type = model
 name = shape_Ogre
@@ -598,6 +559,5 @@ position = 0 0 -0
 BoundingBoxCenter = 4.76837158203125e-005 0.2377285957336426 -0.7486071586608887 
 BoundingBoxHalf = 8.938543319702148 10.05637121200562 14.06696557998657 
 meshcount = 1
-material0 = Default
 //Duration: ( 4093978800 ns)
 // FBXConvert.exe Finished: Fri Apr 22 11:49:32 2016
