@@ -61,11 +61,16 @@ public:
 	std::vector<float3> MorphedHeadLandmarks;
 	std::vector<int> LandmarkMeshVertexToLandmarkIndex;
 
+    std::vector<std::pair<int, float>> LandmarkIdxToMorphedMeshVertIdx;
+
 	CPUTSoftwareMesh MorphedLandmarkMesh;
+
+protected:
+    void updateLandmarksToMorphedMeshVerticesMapItem(int landmarkIndex, int vIdx, float distance);
+    void UpdateHeadProjectionInfo(CDisplacementMapStageOutput *dispMapInfo, SBaseHeadInfo *headInfo, float scale, float zDisplaceOffset, HeadProjectionInfo *outProjInfo);
 
 private:
 
-	void UpdateHeadProjectionInfo(CDisplacementMapStageOutput *dispMapInfo, SBaseHeadInfo *headInfo, float scale, float zDisplaceOffset, HeadProjectionInfo *outProjInfo);
 
 	// CPU cached vertex data
 	CPUTModel *mCachedModel;
@@ -76,6 +81,7 @@ private:
 	std::vector<MappedVertex> mMappedFaceVertices;
 
 	CPUTCamera *mMapProjectionCamera;
+
 };
 
 #endif

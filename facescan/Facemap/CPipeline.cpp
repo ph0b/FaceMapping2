@@ -166,6 +166,8 @@ void CPipeline::Execute(SPipelineInput *input, CPipelineOutput *output)
 		output->DiffuseTexture = HeadBlendStage->Output.OutputDiffuse;
 		output->DeformedMesh = &mDeformedMesh;
 
+        output->LandmarkIdxToMorphedMeshVertIdx = HeadGeometryStage->LandmarkIdxToMorphedMeshVertIdx;
+
 		output->DeformedHairMeshes.clear();
 		for (int i = 0; i < (int)HairStages.size(); i++)
 		{

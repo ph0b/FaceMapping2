@@ -67,7 +67,7 @@ void BuildMorphTarget(CPUTSoftwareMesh *baseMesh, CPUTSoftwareMesh *morphMesh, C
 {
 	outMorphTarget->MorphVerts.clear();
 
-	assert(baseMesh->GetVertCount() == morphMesh->GetVertCount());
+    assert(baseMesh->GetVertCount() == morphMesh->GetVertCount());
 
 	int vertCount = baseMesh->GetVertCount();
 	for (int i = 0; i < vertCount; i++)

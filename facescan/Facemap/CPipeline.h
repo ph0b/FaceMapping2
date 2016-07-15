@@ -165,6 +165,7 @@ public:
 
 	CPUTSoftwareMesh *DeformedMesh;
 	CPUTTexture *DiffuseTexture;
+    std::vector<std::pair<int,float>> LandmarkIdxToMorphedMeshVertIdx;
 
 	std::vector<CPUTSoftwareMesh*> DeformedHairMeshes;
 };
