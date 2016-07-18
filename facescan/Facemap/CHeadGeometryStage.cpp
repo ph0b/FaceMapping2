@@ -34,11 +34,11 @@ struct HeadVertex
 };
 
 static D3D11_INPUT_ELEMENT_DESC gHeadVertexDesc[] = {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { NULL, 0, (DXGI_FORMAT)0, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+    { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    { "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    { NULL, 0, (DXGI_FORMAT)0, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 };
 
 struct HeadProjectionInfo
@@ -290,9 +290,11 @@ void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
                 float3 newPos = v0*barys.x + v1*barys.y + v2*barys.z;
                 newPos.z += dd;
 
-                updateLandmarksToMorphedMeshVerticesMapItem(LandmarkMeshVertexToLandmarkIndex[i0], vIdx, barys.x);
-                updateLandmarksToMorphedMeshVerticesMapItem(LandmarkMeshVertexToLandmarkIndex[i1], vIdx, barys.y);
-                updateLandmarksToMorphedMeshVerticesMapItem(LandmarkMeshVertexToLandmarkIndex[i2], vIdx, barys.z);
+                if(dd < 10.){ //avoid mapping vertices which are behind the head.
+                    updateLandmarksToMorphedMeshVerticesMapItem(LandmarkMeshVertexToLandmarkIndex[i0], vIdx, 1.-barys.x);
+                    updateLandmarksToMorphedMeshVerticesMapItem(LandmarkMeshVertexToLandmarkIndex[i1], vIdx, 1.-barys.y);
+                    updateLandmarksToMorphedMeshVerticesMapItem(LandmarkMeshVertexToLandmarkIndex[i2], vIdx, 1.-barys.z);
+                }
 
                 //newPos = float4(newPos, 1.0f);// *invWorld;
                 CPUTColor4 samp(0.0f, 0.0f, 0.0f, 0.0f);
