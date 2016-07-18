@@ -115,12 +115,12 @@ void FaceMappingEngine::loadLandmarkSet(CPUTAssetSet *landmarkSet)
         CPUTRenderNode *node = NULL;
         landmarkSet->GetAssetByIndex(i, &node);
         mHeadInfo.BaseHeadLandmarks.push_back(node->GetPosition());
-        int lmIdx = i - 1;
-        if (lmIdx >= kLandmarkIndex_FaceOutlineStart && lmIdx <= kLandmarkIndex_FaceOutlineEnd)
-        {
-            // Shift the face outline landmarks so they are don't get used by the algorithm
-            mHeadInfo.BaseHeadLandmarks[lmIdx].x += 100.0f;
-        }
+//        int lmIdx = i - 1;
+//        if (lmIdx >= kLandmarkIndex_FaceOutlineStart && lmIdx <= kLandmarkIndex_FaceOutlineEnd)
+//        {
+//            // Shift the face outline landmarks so they are don't get used by the algorithm
+//            mHeadInfo.BaseHeadLandmarks[lmIdx].x += 100.0f;
+//        }
         SAFE_RELEASE(node);
     }
 }

@@ -51,6 +51,9 @@ int main(int argc, char **argv)
     QObject::connect(&fmw, &FaceMappingWidget::faceHasLoaded, &fmw, [&fmw]{
         QTimer::singleShot(1000, &fmw, [&fmw] {
             fmw.setMorphParamWeight(FaceMappingWidget::MorphParamIndexes::Jaw_Level, 0.6f);
+            fmw.setMorphParamWeight(FaceMappingWidget::MorphParamIndexes::Chin_Level, 0.9f);
+            fmw.setMorphParamWeight(FaceMappingWidget::MorphParamIndexes::Chin_Width, 0.6f);
+            fmw.setMorphParamWeight(FaceMappingWidget::MorphParamIndexes::Jaw_Chin_Protrude, 0.3f);
             fmw.setHairIndex(FaceMappingWidget::HairIndexes::Helmet_2);
             fmw.setBeardIndex(FaceMappingWidget::BeardIndexes::Moustache);
         });
