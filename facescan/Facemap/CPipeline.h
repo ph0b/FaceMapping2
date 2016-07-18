@@ -50,8 +50,8 @@ const int kLandmarkIndex_NoseTip = 30;
 const int kLandmarkIndex_FaceOutlineStart = 53;
 const int kLandmarkIndex_FaceOutlineEnd = 69;
 
-const int kLandmarkIndex_LeftEyeAnchor = kLandmarkIndex_LeftEyeOutside;
-const int kLandmarkIndex_RightEyeAnchor = kLandmarkIndex_RightEyeOutside;
+const int kLandmarkIndex_LeftEyeAnchor = kLandmarkIndex_LeftEye;
+const int kLandmarkIndex_RightEyeAnchor = kLandmarkIndex_RightEye;
 
 enum EBaseHeadTexture
 {
