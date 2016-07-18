@@ -294,9 +294,6 @@ void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
                 updateLandmarksToMorphedMeshVerticesMapItem(LandmarkMeshVertexToLandmarkIndex[i1], vIdx, barys.y);
                 updateLandmarksToMorphedMeshVerticesMapItem(LandmarkMeshVertexToLandmarkIndex[i2], vIdx, barys.z);
 
-                //TODO: here map mesh vIdx to landmark Index using i0 i1 i2 -> the three vertices
-                // if the barycentric coordinates are close to one of these veertices, map it.
-
                 //newPos = float4(newPos, 1.0f);// *invWorld;
                 CPUTColor4 samp(0.0f, 0.0f, 0.0f, 0.0f);
                 controlMapColor->SampleRGBAFromUV(dstMesh->Tex[vIdx].x, dstMesh->Tex[vIdx].y, &samp);

@@ -55,9 +55,9 @@ int main(int argc, char **argv)
             fmw.setBeardIndex(FaceMappingWidget::BeardIndexes::Moustache);
         });
 
-        QTimer::singleShot(10000, &fmw, [&fmw] {
-            fmw.startExportingHead(QApplication::applicationDirPath() + "/userdata/generated.obj");
-        });
+//        QTimer::singleShot(10000, &fmw, [&fmw] {
+//            fmw.startExportingHead(QApplication::applicationDirPath() + "/userdata/generated.obj");
+//        });
     });
 
     fmw.startLoadingAssets();

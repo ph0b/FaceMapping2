@@ -62,8 +62,8 @@ void FaceMappingEngine::SetDefaultTweaks()
     mTweaks.FaceRoll = 0.0f;
     mTweaks.OutputTextureResolution = 2048;
     mTweaks.DisplaceOffset = float3(0.0f, 0.0f, -3.5f);
-    mTweaks.BlendColor1 = CPUTColorFromBytes(228, 194, 171, 255);
-    mTweaks.BlendColor2 = CPUTColorFromBytes(205, 50, 50, 255);
+    mTweaks.BlendColor1 = CPUTColorFromBytes(202, 171, 162, 255);
+    mTweaks.BlendColor2 = CPUTColorFromBytes(157, 114, 114, 255);
     mTweaks.PostBlendAdjust[0] = mTweaks.PostBlendAdjust[1] = int3(0, 0, 0);
     mTweaks.PostBlendColorize[0] = mTweaks.PostBlendColorize[1] = int3(180, 50, 0);
     mTweaks.PostBlendMode = PostBlendColorMode_None;
