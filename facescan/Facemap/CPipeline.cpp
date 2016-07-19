@@ -98,7 +98,6 @@ void CPipeline::executeHeadGeometryStage(SPipelineInput *input, CDisplacementMap
 	hgInput.OtherHeadBlend = input->Tweaks->OtherHeadBlend;
 	hgInput.OtherHeadMesh = input->Tweaks->OtherHeadMesh;
 	hgInput.Flags = input->Tweaks->Flags;
-	hgInput.ClearCachedProjections = false;
 	HeadGeometryStage->Execute(&hgInput);
 }
 

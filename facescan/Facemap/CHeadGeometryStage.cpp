@@ -24,6 +24,7 @@
 #include "CPUTSoftwareMesh.h"
 
 #include <utility>
+#include <QDebug>
 
 struct HeadVertex
 {
@@ -70,7 +71,7 @@ CHeadGeometryStage::~CHeadGeometryStage()
 }
 
 
-void CHeadGeometryStage::UpdateHeadProjectionInfo(CDisplacementMapStageOutput *dispMapInfo, SBaseHeadInfo *headInfo, float scale, float zDisplaceOffset, HeadProjectionInfo *outProjInfo)
+void CHeadGeometryStage::updateHeadProjectionInfo(CDisplacementMapStageOutput *dispMapInfo, SBaseHeadInfo *headInfo, float scale, float zDisplaceOffset, HeadProjectionInfo *outProjInfo)
 {
     float eyeDistanceMS; // model space
     float2 mapScaleFactor;
@@ -190,9 +191,153 @@ void CHeadGeometryStage::updateLandmarksToMorphedMeshVerticesMapItem(int landmar
     }
 }
 
+//TODO: go on with other landmarks.
+void CHeadGeometryStage::updateMorphVsScanDeltas(const std::vector<float2> &mapLandmarks, const float4x4& mapToHeadSpaceTransform, const CPUTSoftwareMesh *dstMesh)
+{
+    float3 chinBottomPosOnBaseScan = float4(0.0f, mapLandmarks[kLandmarkIndex_ChinBottom].y, 0.0f, 1.0f) * mapToHeadSpaceTransform;
+    float3 lipBottomPosOnBaseScan = float4(0.0f, mapLandmarks[kLandmarkIndex_LipBottom].y, 0.0f, 1.0f) * mapToHeadSpaceTransform;
+
+    float chinHeightOnBaseScan = (chinBottomPosOnBaseScan-lipBottomPosOnBaseScan).length(); // /!\ can be FLT_MAX..
+    float chinHeightOnMorphedHead = abs((dstMesh->Pos[LandmarkIdxToMorphedMeshVertIdx[kLandmarkIndex_ChinBottom].first] - dstMesh->Pos[LandmarkIdxToMorphedMeshVertIdx[51].first]).y);
+
+    MorphVsScanChinHeightDelta = (chinHeightOnMorphedHead - chinHeightOnBaseScan)/chinHeightOnBaseScan;
+    qDebug() << MorphVsScanChinHeightDelta;
+}
+
+void CHeadGeometryStage::updateMorphedLandmarkMesh(CPUTSoftwareMesh* landmarkMesh, const std::vector<float2>& mapLandmarks, const float4x4& mapToHeadSpaceTransform)
+{
+    MorphedLandmarkMesh.CopyFrom(landmarkMesh);
+    // Shift the landmark mesh to match the face landmarks
+    for (int i = 0; i < landmarkMesh->GetVertCount(); i++)
+    {
+        int idx = mLandmarkMeshVertexToLandmarkIndex[i];
+        if (idx != -1)
+        {
+            float2 lmMapPos = mapLandmarks[idx];
+            float4 pos = float4(lmMapPos.x, lmMapPos.y, MorphedLandmarkMesh.Pos[i].z, 1.0f);
+            MorphedLandmarkMesh.Pos[i] = pos * mapToHeadSpaceTransform;
+        }
+    }
+}
+
+void CHeadGeometryStage::updateLandmarkMeshVertexToLandmarkIndexMap(const CPUTSoftwareMesh* landmarkMesh, const std::vector<float3>& baseHeadLandmarks)
+{
+    mLandmarkMeshVertexToLandmarkIndex.clear();
+    int lmVertCount = landmarkMesh->GetVertCount();
+
+    for (int i = 0; i < lmVertCount; i++)
+    {
+        mLandmarkMeshVertexToLandmarkIndex.push_back(-1);
+        float closestDistance = FLT_MAX;
+        for (int j = 0; j < baseHeadLandmarks.size(); j++)
+        {
+            float3 vertexToLandmark = landmarkMesh->Pos[i] - baseHeadLandmarks[j];
+            vertexToLandmark.z = 0.0f; // Ignore depth (i.e., project landmark onto landmark mesh plane)
+            float distance = abs(vertexToLandmark.length());
+            if (distance < 1.0f && distance < closestDistance)
+            {
+                closestDistance = distance;
+                mLandmarkMeshVertexToLandmarkIndex[i] = j;
+            }
+        }
+    }
+}
+
+void CHeadGeometryStage::updateLandmarksToMorphedMeshVerticesMap()
+{
+    for (int vIdx = 0; vIdx < mMappedFaceVertices.size(); vIdx++) {
+        float dd = mMappedFaceVertices[vIdx].ClosestDistance;
+        if (dd < 10.0) {//avoid mapping vertices which are behind the head or at FLT_MAX distance.
+            float3 barys = mMappedFaceVertices[vIdx].BarycentricCoordinates;
+            int lIdx = mMappedFaceVertices[vIdx].TriangleIndex;   // headVertex[hIdx] projects onto landmarkMeshTriangle[lIdx]
+            assert(lIdx < MorphedLandmarkMesh.IndexBufferCount);
+            UINT i0 = MorphedLandmarkMesh.IB[lIdx * 3 + 0];
+            UINT i1 = MorphedLandmarkMesh.IB[lIdx * 3 + 1];
+            UINT i2 = MorphedLandmarkMesh.IB[lIdx * 3 + 2];
+
+            updateLandmarksToMorphedMeshVerticesMapItem(mLandmarkMeshVertexToLandmarkIndex[i0], vIdx, 1.-barys.x);
+            updateLandmarksToMorphedMeshVerticesMapItem(mLandmarkMeshVertexToLandmarkIndex[i1], vIdx, 1.-barys.y);
+            updateLandmarksToMorphedMeshVerticesMapItem(mLandmarkMeshVertexToLandmarkIndex[i2], vIdx, 1.-barys.z);
+        }
+    }
+}
+
+void CHeadGeometryStage::fitDeformedMeshToFace(CPUTSoftwareTexture *controlMapColor)
+{
+    for (int vIdx = 0; vIdx < mMappedFaceVertices.size(); vIdx++)
+    {
+        float dd = mMappedFaceVertices[vIdx].ClosestDistance;
+        if (dd != FLT_MAX)
+        {
+            int lIdx = mMappedFaceVertices[vIdx].TriangleIndex;   // headVertex[hIdx] projects onto landmarkMeshTriangle[lIdx]
+            assert(lIdx < MorphedLandmarkMesh.IndexBufferCount);
+            UINT i0 = MorphedLandmarkMesh.IB[lIdx * 3 + 0];
+            UINT i1 = MorphedLandmarkMesh.IB[lIdx * 3 + 1];
+            UINT i2 = MorphedLandmarkMesh.IB[lIdx * 3 + 2];
+
+            float3 v0 = MorphedLandmarkMesh.Pos[i0];
+            float3 v1 = MorphedLandmarkMesh.Pos[i1];
+            float3 v2 = MorphedLandmarkMesh.Pos[i2];
+
+            float3 barys = mMappedFaceVertices[vIdx].BarycentricCoordinates;
+            float3 newPos = v0*barys.x + v1*barys.y + v2*barys.z;
+            newPos.z += dd;
+
+            CPUTColor4 samp(0.0f, 0.0f, 0.0f, 0.0f);
+            controlMapColor->SampleRGBAFromUV(DeformedMesh.Tex[vIdx].x, DeformedMesh.Tex[vIdx].y, &samp);
+            DeformedMesh.Pos[vIdx] = DeformedMesh.Pos[vIdx] * (1.0f - samp.r) + newPos * samp.r;
+        }
+    }
+}
+
+void CHeadGeometryStage::blendDeformedMeshZAndTexture(const HeadProjectionInfo &hpi, CPUTSoftwareTexture *controlMapDisplacement, CPUTSoftwareTexture* displacementMap, bool skipDisplacementMap)
+{
+    CPUTColor4 dispSample(0.0f, 0.0f, 0.0f, 0.0f);
+    CPUTColor4 controlSample(0.0f, 0.0f, 0.0f, 0.0f);
+
+    for (int i = 0; i < DeformedMesh.GetVertCount(); i++)
+    {
+        float3 pos = DeformedMesh.Pos[i];
+
+        // project displacement map and color map
+        float3 projectedUV = float4(pos, 1.0f) * hpi.ViewProjTexMatrix;
+
+        displacementMap->SampleRGBAFromUV(projectedUV.x, projectedUV.y, &dispSample);
+
+        float displacedZ = RemapRange(dispSample.r, hpi.DepthMapRangeMin, hpi.DepthMapRangeMax, hpi.ExtrudeMinZ, hpi.ExtrudeMaxZ);
+
+        controlMapDisplacement->SampleRGBAFromUV(DeformedMesh.Tex[i].x, DeformedMesh.Tex[i].y, &controlSample);
+
+        // Blend between displaced Z and default model z based on the control texture's red value
+        if (!skipDisplacementMap)
+            pos.z = floatLerp(pos.z, displacedZ, controlSample.r);
+
+        DeformedMesh.Tex2[i] = float2(projectedUV.x, projectedUV.y);
+        DeformedMesh.Pos[i] = pos;
+    }
+}
+
+void CHeadGeometryStage::updateDeformedMeshNormals(CPUTSoftwareTexture *controlMapDisplacement)
+{
+    CPUTColor4 controlSample(0.0f, 0.0f, 0.0f, 0.0f);
+    float3 *tempNormals = (float3*)malloc(sizeof(float3) * DeformedMesh.GetVertCount());
+    CalculateMeshNormals(DeformedMesh.Pos, DeformedMesh.IB, DeformedMesh.GetVertCount(), DeformedMesh.IndexBufferCount / 3, tempNormals);
+    for (int i = 0; i < DeformedMesh.GetVertCount(); i++)
+    {
+        controlMapDisplacement->SampleRGBAFromUV(DeformedMesh.Tex[i].x, DeformedMesh.Tex[i].y, &controlSample);
+        DeformedMesh.Normal[i] = tempNormals[i] * controlSample.r + DeformedMesh.Normal[i] * (1.0f - controlSample.r);
+        DeformedMesh.Normal[i] = DeformedMesh.Normal[i].normalize();
+    }
+    free(tempNormals);
+}
+
 void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
 {
-    CPUTSoftwareMesh *base = input->BaseHeadInfo->BaseHeadMesh;
+    assert(input->BaseHeadInfo->BaseHeadMesh->Pos);
+    assert(input->BaseHeadInfo->BaseHeadMesh->Tex);
+
+    CPUTSoftwareTexture *controlMapDisplacement = ((CPUTTextureDX11*)input->BaseHeadInfo->Textures[eBaseHeadTexture_ControlMap_Displacement])->GetSoftwareTexture(false, true);
+    CPUTSoftwareTexture *controlMapColor = ((CPUTTextureDX11*)input->BaseHeadInfo->Textures[eBaseHeadTexture_ControlMap_Color])->GetSoftwareTexture(false, true);
 
     // First, correlate landmark mesh vertices to landmarks
     // Potentially difficult to force vertex indices from authoring package (e.g., 3dsMax).
@@ -200,158 +345,53 @@ void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
     // At worst, can manually edit asset.set file.
     // So, search landmark asset set for landmark at position of each vertex
 
-    LandmarkMeshVertexToLandmarkIndex.clear();
-    int lmVertCount = input->BaseHeadInfo->LandmarkMesh.GetVertCount();
-    int landmarkCount = (int)input->BaseHeadInfo->BaseHeadLandmarks.size();
-    for (int i = 0; i < lmVertCount; i++)
-    {
-        LandmarkMeshVertexToLandmarkIndex.push_back(-1);
-        float closestDistance = FLT_MAX;
-        for (int j = 0; j < landmarkCount; j++)
-        {
-            float3 vertexToLandmark = input->BaseHeadInfo->LandmarkMesh.Pos[i] - input->BaseHeadInfo->BaseHeadLandmarks[j];
-            vertexToLandmark.z = 0.0f; // Ignore depth (i.e., project landmark onto landmark mesh plane)
-            float distance = abs(vertexToLandmark.length());
-            if (distance < 1.0f && distance < closestDistance)
-            {
-                closestDistance = distance;
-                LandmarkMeshVertexToLandmarkIndex[i] = j;
-            }
-        }
-    }
-
     HeadProjectionInfo hpi;
-    UpdateHeadProjectionInfo(input->DisplacementMapInfo, input->BaseHeadInfo, input->Scale, input->ZDisplaceOffset, &hpi);
+    updateHeadProjectionInfo(input->DisplacementMapInfo, input->BaseHeadInfo, input->Scale, input->ZDisplaceOffset, &hpi);
 
-    MorphedLandmarkMesh.CopyFrom(&input->BaseHeadInfo->LandmarkMesh);
-    // Shift the landmark mesh to match the face landmarks
-    for (int i = 0; i < lmVertCount; i++)
-    {
-        int idx = LandmarkMeshVertexToLandmarkIndex[i];
-        if (idx != -1)
-        {
-            float2 lmMapPos = input->DisplacementMapInfo->MapLandmarks[idx];
-            float4 pos = float4(lmMapPos.x, lmMapPos.y, MorphedLandmarkMesh.Pos[i].z, 1.0f);
-            MorphedLandmarkMesh.Pos[i] = pos * hpi.MapToHeadSpaceTransform;
-        }
-    }
+    updateLandmarkMeshVertexToLandmarkIndexMap(&input->BaseHeadInfo->LandmarkMesh, input->BaseHeadInfo->BaseHeadLandmarks);
+    updateMorphedLandmarkMesh(&input->BaseHeadInfo->LandmarkMesh, input->DisplacementMapInfo->MapLandmarks, hpi.MapToHeadSpaceTransform);
 
-    if (mMappedFaceVertices.size() != input->BaseHeadInfo->BaseHeadMesh->GetVertCount() || input->ClearCachedProjections)
-    {
+    if (mMappedFaceVertices.size() != input->BaseHeadInfo->BaseHeadMesh->GetVertCount()) { //do these things only once
         // Project face vertices onto original landmark mesh
         ProjectMeshVerticesOntoMeshTriangles(input->BaseHeadInfo->BaseHeadMesh, &input->BaseHeadInfo->LandmarkMesh, mMappedFaceVertices);
-    }
 
-    CPUTSoftwareMesh *dstMesh = &DeformedMesh;
-    dstMesh->CopyFrom(input->BaseHeadInfo->BaseHeadMesh);
-
-    assert(base->Pos);
-    assert(base->Tex);
-
-    int vertCount = base->GetVertCount();
-
-    // Apply all the morph targets
-    ApplyMorphTargets(input->MorphTargetEntries, &DeformedMesh, false);
-
-
-    dstMesh->AddComponent(eSMComponent_Tex2);
-
-    LandmarkIdxToMorphedMeshVertIdx.clear();
-    LandmarkIdxToMorphedMeshVertIdx.reserve(landmarkCount);
-    for (int i = 0; i < landmarkCount; i++)
-    {
-        LandmarkIdxToMorphedMeshVertIdx.push_back(std::make_pair(-1,FLT_MAX));
-    }
-
-    CPUTSoftwareTexture *controlMapColor = ((CPUTTextureDX11*)input->BaseHeadInfo->Textures[eBaseHeadTexture_ControlMap_Color])->GetSoftwareTexture(false, true);
-
-    if ((input->Flags & PIPELINE_FLAG_SkipFitFace) == 0)
-    {
-        assert(vertCount == mMappedFaceVertices.size());
-        for (int vIdx = 0; vIdx < vertCount; vIdx++)
-        {
-            float dd = mMappedFaceVertices[vIdx].ClosestDistance;
-            if (dd != FLT_MAX)
+        int landmarksCount = input->BaseHeadInfo->LandmarkMesh.GetVertCount();
+        if(LandmarkIdxToMorphedMeshVertIdx.size()!=landmarksCount){
+            LandmarkIdxToMorphedMeshVertIdx.clear();
+            LandmarkIdxToMorphedMeshVertIdx.reserve(landmarksCount);
+            for (int i = 0; i < landmarksCount; i++)
             {
-                int lIdx = mMappedFaceVertices[vIdx].TriangleIndex;   // headVertex[hIdx] projects onto landmarkMeshTriangle[lIdx]
-                assert(lIdx < MorphedLandmarkMesh.IndexBufferCount);
-                UINT i0 = MorphedLandmarkMesh.IB[lIdx * 3 + 0];
-                UINT i1 = MorphedLandmarkMesh.IB[lIdx * 3 + 1];
-                UINT i2 = MorphedLandmarkMesh.IB[lIdx * 3 + 2];
-
-                float3 v0 = MorphedLandmarkMesh.Pos[i0];
-                float3 v1 = MorphedLandmarkMesh.Pos[i1];
-                float3 v2 = MorphedLandmarkMesh.Pos[i2];
-
-                if(v0.x>=100. || v1.x >= 100. || v2.x>=100.){ // if one of the vertices is in a wrong position (original landmark doesn't exist)
-                    continue;
-                }
-
-                float3 barys = mMappedFaceVertices[vIdx].BarycentricCoordinates;
-
-                if(dd < 10.){ //avoid mapping vertices which are behind the head.
-                    updateLandmarksToMorphedMeshVerticesMapItem(LandmarkMeshVertexToLandmarkIndex[i0], vIdx, 1.-barys.x);
-                    updateLandmarksToMorphedMeshVerticesMapItem(LandmarkMeshVertexToLandmarkIndex[i1], vIdx, 1.-barys.y);
-                    updateLandmarksToMorphedMeshVerticesMapItem(LandmarkMeshVertexToLandmarkIndex[i2], vIdx, 1.-barys.z);
-                }
-
-                float3 newPos = v0*barys.x + v1*barys.y + v2*barys.z;
-                newPos.z += dd;
-
-                CPUTColor4 samp(0.0f, 0.0f, 0.0f, 0.0f);
-                controlMapColor->SampleRGBAFromUV(dstMesh->Tex[vIdx].x, dstMesh->Tex[vIdx].y, &samp);
-                dstMesh->Pos[vIdx] = dstMesh->Pos[vIdx] * (1.0f - samp.r) + newPos * samp.r;
+                LandmarkIdxToMorphedMeshVertIdx.push_back(std::make_pair(-1,FLT_MAX));
             }
         }
     }
 
-    CPUTSoftwareTexture *controlMapDisplacement = ((CPUTTextureDX11*)input->BaseHeadInfo->Textures[eBaseHeadTexture_ControlMap_Displacement])->GetSoftwareTexture(false, true);
+    DeformedMesh.CopyFrom(input->BaseHeadInfo->BaseHeadMesh);
+    DeformedMesh.AddComponent(eSMComponent_Tex2);
 
-    CPUTColor4 dispSample(0.0f, 0.0f, 0.0f, 0.0f);
-    CPUTColor4 controlSample(0.0f, 0.0f, 0.0f, 0.0f);
-    for (int i = 0; i < vertCount; i++)
-    {
-        float3 pos = dstMesh->Pos[i];
+    ApplyMorphTargets(input->MorphTargetEntries, &DeformedMesh, false);
 
-        // project displacement map and color map
-        float3 projectedUV = float4(pos, 1.0f) * hpi.ViewProjTexMatrix;
+    if ((input->Flags & PIPELINE_FLAG_SkipFitFace) == 0)
+        fitDeformedMeshToFace(controlMapColor);
 
-        input->DisplacementMap->SampleRGBAFromUV(projectedUV.x, projectedUV.y, &dispSample);
+    blendDeformedMeshZAndTexture(hpi, controlMapDisplacement, input->DisplacementMap, (input->Flags & PIPELINE_FLAG_SkipDisplacementMap)!=0);
 
-        float displacedZ = RemapRange(dispSample.r, hpi.DepthMapRangeMin, hpi.DepthMapRangeMax, hpi.ExtrudeMinZ, hpi.ExtrudeMaxZ);
+    updateLandmarksToMorphedMeshVerticesMap();
+    updateMorphVsScanDeltas(input->DisplacementMapInfo->MapLandmarks, hpi.MapToHeadSpaceTransform, &DeformedMesh);
 
-        controlMapDisplacement->SampleRGBAFromUV(dstMesh->Tex[i].x, dstMesh->Tex[i].y, &controlSample);
-
-        // Blend between displaced Z and default model z based on the control texture's red value
-        if ((input->Flags & PIPELINE_FLAG_SkipDisplacementMap) == 0)
-            pos.z = floatLerp(pos.z, displacedZ, controlSample.r);
-
-        dstMesh->Tex2[i] = float2(projectedUV.x, projectedUV.y);
-        dstMesh->Pos[i] = pos;
-    }
-
-
-    // Apply all the morph targets
+    // Apply all the post morph targets
     ApplyMorphTargets(input->MorphTargetEntries, &DeformedMesh, true);
 
-    if (input->OtherHeadBlend > 0.0f && input->OtherHeadMesh != NULL)
-    {
-        for (int i = 0; i < vertCount; i++)
-        {
-            dstMesh->Pos[i] = dstMesh->Pos[i] + (input->OtherHeadMesh->Pos[i] - dstMesh->Pos[i]) * input->OtherHeadBlend;
-        }
-    }
+    //    if (input->OtherHeadBlend > 0.0f && input->OtherHeadMesh != NULL)
+    //    {
+    //        for (int i = 0; i < base->GetVertCount(); i++)
+    //        {
+    //            DeformedMesh.Pos[i] = DeformedMesh.Pos[i] + (input->OtherHeadMesh->Pos[i] - DeformedMesh.Pos[i]) * input->OtherHeadBlend;
+    //        }
+    //    }
 
     // Fix up normals now that we have imprinted the face
-    float3 *tempNormals = (float3*)malloc(sizeof(float3) * vertCount);
-    CalculateMeshNormals(dstMesh->Pos, dstMesh->IB, vertCount, dstMesh->IndexBufferCount / 3, tempNormals);
-    for (int i = 0; i < vertCount; i++)
-    {
-        controlMapDisplacement->SampleRGBAFromUV(dstMesh->Tex[i].x, dstMesh->Tex[i].y, &controlSample);
-        dstMesh->Normal[i] = tempNormals[i] * controlSample.r + dstMesh->Normal[i] * (1.0f - controlSample.r);
-        dstMesh->Normal[i] = dstMesh->Normal[i].normalize();
-    }
-    free(tempNormals);
+    updateDeformedMeshNormals(controlMapDisplacement);
 
 }
 

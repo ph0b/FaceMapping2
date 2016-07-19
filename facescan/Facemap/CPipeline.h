@@ -58,6 +58,9 @@ const int kLandmarkIndex_ChinRight = 62;
 const int kLandmarkIndex_FaceLeft = 54;
 const int kLandmarkIndex_FaceRight = 68;
 
+const int kLandmarkIndex_LipBottom = 51;
+
+
 const int kLandmarkIndex_LeftEyeAnchor = kLandmarkIndex_LeftEye;
 const int kLandmarkIndex_RightEyeAnchor = kLandmarkIndex_RightEye;
 

@@ -43,7 +43,6 @@ struct SHeadGeometryStageInput
 	float OtherHeadBlend;
 	CPUTSoftwareMesh *OtherHeadMesh;
 	int Flags;
-	bool ClearCachedProjections;
 };
 
 
@@ -53,33 +52,28 @@ public:
 
 	CHeadGeometryStage();
 	~CHeadGeometryStage();
-
 	void Execute(SHeadGeometryStageInput *input);
 
-	CPUTSoftwareMesh DeformedMesh;
-
-	std::vector<float3> MorphedHeadLandmarks;
-	std::vector<int> LandmarkMeshVertexToLandmarkIndex;
-
-    std::vector<std::pair<int, float>> LandmarkIdxToMorphedMeshVertIdx;
-
 	CPUTSoftwareMesh MorphedLandmarkMesh;
+    std::vector<std::pair<int, float>> LandmarkIdxToMorphedMeshVertIdx;
+    CPUTSoftwareMesh DeformedMesh;
+
+    float MorphVsScanChinHeightDelta=FLT_MAX;
 
 protected:
     void updateLandmarksToMorphedMeshVerticesMapItem(int landmarkIndex, int vIdx, float distance);
-    void UpdateHeadProjectionInfo(CDisplacementMapStageOutput *dispMapInfo, SBaseHeadInfo *headInfo, float scale, float zDisplaceOffset, HeadProjectionInfo *outProjInfo);
+    void updateHeadProjectionInfo(CDisplacementMapStageOutput *dispMapInfo, SBaseHeadInfo *headInfo, float scale, float zDisplaceOffset, HeadProjectionInfo *outProjInfo);
+    void updateMorphVsScanDeltas(const std::vector<float2> &mapLandmarks, const float4x4& mapToHeadSpaceTransform, const CPUTSoftwareMesh *dstMesh);
+    void updateMorphedLandmarkMesh(CPUTSoftwareMesh* landmarkMesh, const std::vector<float2>& mapLandmarks, const float4x4& mapToHeadSpaceTransform);
+    void updateLandmarkMeshVertexToLandmarkIndexMap(const CPUTSoftwareMesh* landmarkMesh, const std::vector<float3>& baseHeadLandmarks);
+    void updateLandmarksToMorphedMeshVerticesMap();
+    void fitDeformedMeshToFace(CPUTSoftwareTexture *controlMapColor);
+    void blendDeformedMeshZAndTexture(const HeadProjectionInfo &hpi, CPUTSoftwareTexture *controlMapDisplacement, CPUTSoftwareTexture *displacementMap, bool skipDisplacementMap);
+    void updateDeformedMeshNormals(CPUTSoftwareTexture *controlMapDisplacement);
 
 private:
-
-
-	// CPU cached vertex data
-	CPUTModel *mCachedModel;
-
-	CPUTModel *mCloneSource; // the source CPUTModel that was cloned
-	CPUTMeshDX11 *mCloneMesh;
-
 	std::vector<MappedVertex> mMappedFaceVertices;
-
+    std::vector<int> mLandmarkMeshVertexToLandmarkIndex;
 	CPUTCamera *mMapProjectionCamera;
 
 };

@@ -53,7 +53,7 @@ public:
 
 	void CopyToDX11Mesh(CPUTMeshDX11 *dstMesh);
 
-	int GetVertCount() { return mVertCount; }
+    int GetVertCount() const { return mVertCount; }
 
 	float3 *Pos;
 	float3 *Normal;
