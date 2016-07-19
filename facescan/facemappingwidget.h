@@ -50,7 +50,7 @@ public:
                                        Shape_1, Shape_2, Shape_3, Width, Roundness, BMI, Cheekbone_Size,
                                        Jaw_Chin_Protrude, Jaw_Chin_Level, Jaw_Neck_Slope,
                                        Jaw_Angle, Brow_Thickness, Brow_Height, Chin_Front,
-                                       Chin_Level, Ovalness}; };
+                                       Ovalness}; };
 
     struct HairIndexes {enum { HairLess = 0, Short, Medium, Long, Helmet_Short, Helmet_2, Helmet_3, Helmet_4 };};
 
