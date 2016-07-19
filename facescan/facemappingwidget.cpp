@@ -90,18 +90,25 @@ void FaceMappingWidget::startExportingHead(QString filename){
 
 void FaceMappingWidget::setMorphParamWeight(int idx, float weight)
 {
-    mFMEngine->SetMorphParamWeight(idx, weight);
+    if(mFMEngine->IsFaceLoaded()){
+        mFMEngine->SetMorphParamWeight(idx, weight);
+    }
 }
 
 void FaceMappingWidget::setPostBMI(float weight)
 {
-    if(mFMEngine->IsFaceLoaded())
-    mFMEngine->SetPostMorphParamWeight(PostMorphParamIndexes::Post_BMI, weight);
+    if(mFMEngine->IsFaceLoaded()){
+        postBMI = weight;
+        mFMEngine->SetPostMorphParamWeight(PostMorphParamIndexes::Post_BMI, weight);
+    }
 }
 
 void FaceMappingWidget::setPostOgre(float weight)
 {
-    mFMEngine->SetPostMorphParamWeight(PostMorphParamIndexes::Post_Ogre, weight);
+    if(mFMEngine->IsFaceLoaded()){
+        postOgre = weight;
+        mFMEngine->SetPostMorphParamWeight(PostMorphParamIndexes::Post_Ogre, weight);
+    }
 }
 
 void FaceMappingWidget::setFaceOrientation(float yaw, float pitch, float roll){
@@ -109,14 +116,17 @@ void FaceMappingWidget::setFaceOrientation(float yaw, float pitch, float roll){
 }
 
 void FaceMappingWidget::setFaceOrientationYaw(float yaw){
+    faceOrientationYaw = yaw;
     mFMEngine->SetFaceOrientation(yaw, faceOrientationPitch, faceOrientationRoll);
 }
 
 void FaceMappingWidget::setFaceOrientationPitch(float pitch){
+    faceOrientationPitch = pitch;
     mFMEngine->SetFaceOrientation(faceOrientationYaw, pitch, faceOrientationRoll);
 }
 
 void FaceMappingWidget::setFaceOrientationRoll(float roll){
+    faceOrientationRoll = roll;
     mFMEngine->SetFaceOrientation(faceOrientationYaw, faceOrientationPitch, roll);
 }
 
@@ -132,6 +142,7 @@ void FaceMappingWidget::setBlendColor2(QColor color){
 }
 
 void FaceMappingWidget::setFaceZOffset(float offset){
+    faceZOffset = offset;
     mFMEngine->SetFaceZOffset(offset);
 }
 

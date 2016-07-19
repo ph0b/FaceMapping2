@@ -31,12 +31,12 @@ private:
     float postBMI;
     float postOgre;
 
-    float faceZOffset;
-    float faceOrientationYaw;
-    float faceOrientationPitch;
-    float faceOrientationRoll;
+    float faceZOffset = 0.0f;
+    float faceOrientationYaw = 0.0f;
+    float faceOrientationPitch = 0.0f;
+    float faceOrientationRoll = 0.0f;
 
-    int hairIndex;
+    int hairIndex = 0;
 
 public:
     FaceMappingWidget();
