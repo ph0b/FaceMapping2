@@ -206,6 +206,11 @@ bool CFaceModel::LoadLandmarks(const std::string &filename, std::vector<float3> 
 				pos += mVertOffset;
 				pos *= mVertScale;
 				floatSwap(&pos.y, &pos.z);
+                if(confidence<10.0f){
+                    pos.x = FLT_MAX;
+                    pos.y = FLT_MAX;
+                    pos.z = FLT_MAX;
+                }
 				outList.push_back(pos);
 			}
 		}

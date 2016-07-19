@@ -201,17 +201,15 @@ void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
     // So, search landmark asset set for landmark at position of each vertex
 
     LandmarkMeshVertexToLandmarkIndex.clear();
-    CPUTSoftwareMesh *headLMMesh = &input->BaseHeadInfo->LandmarkMesh;
-    std::vector<float3> &headLM = input->BaseHeadInfo->BaseHeadLandmarks;
-    int landmarkCount = (int)headLM.size();
-    int lmVertCount = headLMMesh->GetVertCount();
+    int lmVertCount = input->BaseHeadInfo->LandmarkMesh.GetVertCount();
+    int landmarkCount = (int)input->BaseHeadInfo->BaseHeadLandmarks.size();
     for (int i = 0; i < lmVertCount; i++)
     {
         LandmarkMeshVertexToLandmarkIndex.push_back(-1);
         float closestDistance = FLT_MAX;
         for (int j = 0; j < landmarkCount; j++)
         {
-            float3 vertexToLandmark = headLMMesh->Pos[i] - headLM[j];
+            float3 vertexToLandmark = input->BaseHeadInfo->LandmarkMesh.Pos[i] - input->BaseHeadInfo->BaseHeadLandmarks[j];
             vertexToLandmark.z = 0.0f; // Ignore depth (i.e., project landmark onto landmark mesh plane)
             float distance = abs(vertexToLandmark.length());
             if (distance < 1.0f && distance < closestDistance)
@@ -226,7 +224,6 @@ void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
     UpdateHeadProjectionInfo(input->DisplacementMapInfo, input->BaseHeadInfo, input->Scale, input->ZDisplaceOffset, &hpi);
 
     MorphedLandmarkMesh.CopyFrom(&input->BaseHeadInfo->LandmarkMesh);
-
     // Shift the landmark mesh to match the face landmarks
     for (int i = 0; i < lmVertCount; i++)
     {
@@ -286,9 +283,11 @@ void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
                 float3 v1 = MorphedLandmarkMesh.Pos[i1];
                 float3 v2 = MorphedLandmarkMesh.Pos[i2];
 
+                if(v0.x>=100. || v1.x >= 100. || v2.x>=100.){ // if one of the vertices is in a wrong position (original landmark doesn't exist)
+                    continue;
+                }
+
                 float3 barys = mMappedFaceVertices[vIdx].BarycentricCoordinates;
-                float3 newPos = v0*barys.x + v1*barys.y + v2*barys.z;
-                newPos.z += dd;
 
                 if(dd < 10.){ //avoid mapping vertices which are behind the head.
                     updateLandmarksToMorphedMeshVerticesMapItem(LandmarkMeshVertexToLandmarkIndex[i0], vIdx, 1.-barys.x);
@@ -296,12 +295,12 @@ void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
                     updateLandmarksToMorphedMeshVerticesMapItem(LandmarkMeshVertexToLandmarkIndex[i2], vIdx, 1.-barys.z);
                 }
 
-                //newPos = float4(newPos, 1.0f);// *invWorld;
+                float3 newPos = v0*barys.x + v1*barys.y + v2*barys.z;
+                newPos.z += dd;
+
                 CPUTColor4 samp(0.0f, 0.0f, 0.0f, 0.0f);
                 controlMapColor->SampleRGBAFromUV(dstMesh->Tex[vIdx].x, dstMesh->Tex[vIdx].y, &samp);
-
                 dstMesh->Pos[vIdx] = dstMesh->Pos[vIdx] * (1.0f - samp.r) + newPos * samp.r;
-
             }
         }
     }
