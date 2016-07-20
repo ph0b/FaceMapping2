@@ -238,7 +238,6 @@ private:
     std::vector<float> mActivePostMorphParamWeights;
 
     std::map<std::string, CMorphTarget *> mMorphTargetMap;
-    CPUTSoftwareMesh mBaseMesh;
 
     SBaseHeadInfo mHeadInfo;
 

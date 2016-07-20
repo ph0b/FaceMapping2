@@ -161,8 +161,14 @@ bool CDisplacementMapStage::Execute(SDisplacementMapStageInput *input)
 	Output.MapLandmarks.clear();
 	for (int i = 0; i < (int)input->FaceModel->Landmarks.size(); i++)
 	{
-		float4 pos = float4(input->FaceModel->Landmarks[i], 1.0f) * faceLandmarkToMapLandmark;
-		Output.MapLandmarks.push_back(float2(pos.x, pos.y));
+        float3 posFace = input->FaceModel->Landmarks[i];
+        if(posFace.x==FLT_MAX || posFace.y==FLT_MAX || posFace.z==FLT_MAX){ //propagate FLT_MAX value for invalid landmarks
+            Output.MapLandmarks.push_back(float2(FLT_MAX, FLT_MAX));
+        }
+        else{
+            float4 posMap = float4(posFace, 1.0f) * faceLandmarkToMapLandmark;
+            Output.MapLandmarks.push_back(float2(posMap.x, posMap.y));
+        }
 	}
 
 	return true;

@@ -59,13 +59,14 @@ public:
     CPUTSoftwareMesh DeformedMesh;
 
     float MorphVsScanChinHeightDelta=FLT_MAX;
+    float MorphVsScanFaceWidthDelta=FLT_MAX;
 
 protected:
     void updateLandmarksToMorphedMeshVerticesMapItem(int landmarkIndex, int vIdx, float distance);
     void updateHeadProjectionInfo(CDisplacementMapStageOutput *dispMapInfo, SBaseHeadInfo *headInfo, float scale, float zDisplaceOffset, HeadProjectionInfo *outProjInfo);
     void updateMorphVsScanDeltas(const std::vector<float2> &mapLandmarks, const float4x4& mapToHeadSpaceTransform, const CPUTSoftwareMesh *dstMesh);
     void updateMorphedLandmarkMesh(CPUTSoftwareMesh* landmarkMesh, const std::vector<float2>& mapLandmarks, const float4x4& mapToHeadSpaceTransform);
-    void updateLandmarkMeshVertexToLandmarkIndexMap(const CPUTSoftwareMesh* landmarkMesh, const std::vector<float3>& baseHeadLandmarks);
+    void updateLandmarkMeshVertexToLandmarkIndexMap(const CPUTSoftwareMesh* landmarkMesh, const std::vector<float3>& baseHeadLandmarks, const std::vector<float2> &mapLandmarks);
     void updateLandmarksToMorphedMeshVerticesMap();
     void fitDeformedMeshToFace(CPUTSoftwareTexture *controlMapColor);
     void blendDeformedMeshZAndTexture(const HeadProjectionInfo &hpi, CPUTSoftwareTexture *controlMapDisplacement, CPUTSoftwareTexture *displacementMap, bool skipDisplacementMap);

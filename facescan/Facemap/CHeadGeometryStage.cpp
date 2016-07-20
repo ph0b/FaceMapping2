@@ -24,7 +24,6 @@
 #include "CPUTSoftwareMesh.h"
 
 #include <utility>
-#include <QDebug>
 
 struct HeadVertex
 {
@@ -191,17 +190,28 @@ void CHeadGeometryStage::updateLandmarksToMorphedMeshVerticesMapItem(int landmar
     }
 }
 
-//TODO: go on with other landmarks.
+//TODO: go on with other landmarks and check for buggy values.
 void CHeadGeometryStage::updateMorphVsScanDeltas(const std::vector<float2> &mapLandmarks, const float4x4& mapToHeadSpaceTransform, const CPUTSoftwareMesh *dstMesh)
 {
-    float3 chinBottomPosOnBaseScan = float4(0.0f, mapLandmarks[kLandmarkIndex_ChinBottom].y, 0.0f, 1.0f) * mapToHeadSpaceTransform;
-    float3 lipBottomPosOnBaseScan = float4(0.0f, mapLandmarks[kLandmarkIndex_LipBottom].y, 0.0f, 1.0f) * mapToHeadSpaceTransform;
+    auto diffVecBaseScan = [&] (int lIdx1, int lIdx2){
+        float3 vec1 = float4(mapLandmarks[lIdx1].x, mapLandmarks[lIdx1].y, 0.0f, 1.0f) * mapToHeadSpaceTransform;
+        float3 vec2 = float4(mapLandmarks[lIdx2].x, mapLandmarks[lIdx2].y, 0.0f, 1.0f) * mapToHeadSpaceTransform;
+        return vec1 - vec2;
+    };
 
-    float chinHeightOnBaseScan = (chinBottomPosOnBaseScan-lipBottomPosOnBaseScan).length(); // /!\ can be FLT_MAX..
-    float chinHeightOnMorphedHead = abs((dstMesh->Pos[LandmarkIdxToMorphedMeshVertIdx[kLandmarkIndex_ChinBottom].first] - dstMesh->Pos[LandmarkIdxToMorphedMeshVertIdx[51].first]).y);
+    auto diffVecMorphedHead = [&] (int lIdx1, int lIdx2){
+        float3 vec1 = dstMesh->Pos[LandmarkIdxToMorphedMeshVertIdx[lIdx1].first];
+        float3 vec2 = dstMesh->Pos[LandmarkIdxToMorphedMeshVertIdx[lIdx2].first];
+        return vec1 - vec2;
+    };
 
+    float chinHeightOnBaseScan = abs(diffVecBaseScan(kLandmarkIndex_LipBottom, kLandmarkIndex_ChinBottom).y);
+    float chinHeightOnMorphedHead = abs(diffVecMorphedHead(kLandmarkIndex_LipBottom, kLandmarkIndex_ChinBottom).y);
     MorphVsScanChinHeightDelta = (chinHeightOnMorphedHead - chinHeightOnBaseScan)/chinHeightOnBaseScan;
-    qDebug() << MorphVsScanChinHeightDelta;
+
+    float faceWidthOnBaseScan = abs(diffVecBaseScan(kLandmarkIndex_FaceRight, kLandmarkIndex_FaceLeft).x);
+    float faceWidthOnMorphedHead = abs(diffVecMorphedHead(kLandmarkIndex_FaceRight, kLandmarkIndex_FaceLeft).x);
+    MorphVsScanFaceWidthDelta = (faceWidthOnMorphedHead - faceWidthOnBaseScan)/faceWidthOnBaseScan;
 }
 
 void CHeadGeometryStage::updateMorphedLandmarkMesh(CPUTSoftwareMesh* landmarkMesh, const std::vector<float2>& mapLandmarks, const float4x4& mapToHeadSpaceTransform)
@@ -220,7 +230,7 @@ void CHeadGeometryStage::updateMorphedLandmarkMesh(CPUTSoftwareMesh* landmarkMes
     }
 }
 
-void CHeadGeometryStage::updateLandmarkMeshVertexToLandmarkIndexMap(const CPUTSoftwareMesh* landmarkMesh, const std::vector<float3>& baseHeadLandmarks)
+void CHeadGeometryStage::updateLandmarkMeshVertexToLandmarkIndexMap(const CPUTSoftwareMesh* landmarkMesh, const std::vector<float3>& baseHeadLandmarks, const std::vector<float2>& mapLandmarks)
 {
     mLandmarkMeshVertexToLandmarkIndex.clear();
     int lmVertCount = landmarkMesh->GetVertCount();
@@ -231,10 +241,12 @@ void CHeadGeometryStage::updateLandmarkMeshVertexToLandmarkIndexMap(const CPUTSo
         float closestDistance = FLT_MAX;
         for (int j = 0; j < baseHeadLandmarks.size(); j++)
         {
+            float3 tmp = landmarkMesh->Pos[i];
             float3 vertexToLandmark = landmarkMesh->Pos[i] - baseHeadLandmarks[j];
             vertexToLandmark.z = 0.0f; // Ignore depth (i.e., project landmark onto landmark mesh plane)
             float distance = abs(vertexToLandmark.length());
-            if (distance < 1.0f && distance < closestDistance)
+            if (distance < 1.0f && distance < closestDistance
+                    && mapLandmarks[j].x!=FLT_MAX) // avoid mapping a landmark if the target on the scan is invalid.
             {
                 closestDistance = distance;
                 mLandmarkMeshVertexToLandmarkIndex[i] = j;
@@ -333,8 +345,8 @@ void CHeadGeometryStage::updateDeformedMeshNormals(CPUTSoftwareTexture *controlM
 
 void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
 {
-    assert(input->BaseHeadInfo->BaseHeadMesh->Pos);
-    assert(input->BaseHeadInfo->BaseHeadMesh->Tex);
+    assert(input->BaseHeadInfo->BaseHeadMesh.Pos);
+    assert(input->BaseHeadInfo->BaseHeadMesh.Tex);
 
     CPUTSoftwareTexture *controlMapDisplacement = ((CPUTTextureDX11*)input->BaseHeadInfo->Textures[eBaseHeadTexture_ControlMap_Displacement])->GetSoftwareTexture(false, true);
     CPUTSoftwareTexture *controlMapColor = ((CPUTTextureDX11*)input->BaseHeadInfo->Textures[eBaseHeadTexture_ControlMap_Color])->GetSoftwareTexture(false, true);
@@ -344,16 +356,16 @@ void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
     // Easier to force order of assets in asset set (note, 3dsMax appears to use selection order).
     // At worst, can manually edit asset.set file.
     // So, search landmark asset set for landmark at position of each vertex
+    // and discard mapping to invalid landmarks.
+    updateLandmarkMeshVertexToLandmarkIndexMap(&input->BaseHeadInfo->LandmarkMesh, input->BaseHeadInfo->BaseHeadLandmarks, input->DisplacementMapInfo->MapLandmarks);
 
     HeadProjectionInfo hpi;
     updateHeadProjectionInfo(input->DisplacementMapInfo, input->BaseHeadInfo, input->Scale, input->ZDisplaceOffset, &hpi);
-
-    updateLandmarkMeshVertexToLandmarkIndexMap(&input->BaseHeadInfo->LandmarkMesh, input->BaseHeadInfo->BaseHeadLandmarks);
     updateMorphedLandmarkMesh(&input->BaseHeadInfo->LandmarkMesh, input->DisplacementMapInfo->MapLandmarks, hpi.MapToHeadSpaceTransform);
 
-    if (mMappedFaceVertices.size() != input->BaseHeadInfo->BaseHeadMesh->GetVertCount()) { //do these things only once
+    if (mMappedFaceVertices.size() != input->BaseHeadInfo->BaseHeadMesh.GetVertCount()) { //do these things only once
         // Project face vertices onto original landmark mesh
-        ProjectMeshVerticesOntoMeshTriangles(input->BaseHeadInfo->BaseHeadMesh, &input->BaseHeadInfo->LandmarkMesh, mMappedFaceVertices);
+        ProjectMeshVerticesOntoMeshTriangles(&input->BaseHeadInfo->BaseHeadMesh, &input->BaseHeadInfo->LandmarkMesh, mMappedFaceVertices);
 
         int landmarksCount = input->BaseHeadInfo->LandmarkMesh.GetVertCount();
         if(LandmarkIdxToMorphedMeshVertIdx.size()!=landmarksCount){
@@ -366,7 +378,7 @@ void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
         }
     }
 
-    DeformedMesh.CopyFrom(input->BaseHeadInfo->BaseHeadMesh);
+    DeformedMesh.CopyFrom(&input->BaseHeadInfo->BaseHeadMesh);
     DeformedMesh.AddComponent(eSMComponent_Tex2);
 
     ApplyMorphTargets(input->MorphTargetEntries, &DeformedMesh, false);

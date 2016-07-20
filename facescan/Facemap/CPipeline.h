@@ -55,8 +55,8 @@ const int kLandmarkIndex_ChinLeft = 60;
 const int kLandmarkIndex_ChinBottom = 61;
 const int kLandmarkIndex_ChinRight = 62;
 
-const int kLandmarkIndex_FaceLeft = 54;
-const int kLandmarkIndex_FaceRight = 68;
+const int kLandmarkIndex_FaceLeft = 53;
+const int kLandmarkIndex_FaceRight = 69;
 
 const int kLandmarkIndex_LipBottom = 51;
 
@@ -82,7 +82,7 @@ struct SBaseHeadInfo
 
 	CPUTSoftwareMesh LandmarkMesh;
 
-	CPUTSoftwareMesh *BaseHeadMesh;
+    CPUTSoftwareMesh BaseHeadMesh;
 	CPUTTexture *Textures[eBaseHeadTexture_Count];
 };
 

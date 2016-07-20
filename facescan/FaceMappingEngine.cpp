@@ -121,7 +121,7 @@ void FaceMappingEngine::loadLandmarkSet(CPUTAssetSet *landmarkSet)
                 && lmIdx!=kLandmarkIndex_FaceLeft && lmIdx!=kLandmarkIndex_FaceRight)
         {
             // Shift most face outline landmarks so they don't get used by the algorithm
-            mHeadInfo.BaseHeadLandmarks[lmIdx].x += 100.0f;
+            mHeadInfo.BaseHeadLandmarks[lmIdx].x = FLT_MAX;
         }
         SAFE_RELEASE(node);
     }
@@ -159,7 +159,7 @@ void FaceMappingEngine::loadHeadModelAndAssets(std::string mediaDir)
     mHeadInfo.LandmarkMesh.ApplyTransform(mCPUTLandmarkModel->GetWorldMatrix());
 
     CPUTAssetSet *headSet = mHeadAssetScene->GetAssetSet(2);
-    loadCPUTModelToSWMesh(headSet, "Base_Head.mdl", &mBaseMesh);
+    loadCPUTModelToSWMesh(headSet, "Base_Head.mdl", &mHeadInfo.BaseHeadMesh);
 
     loadHair(NULL, NULL, "Hairless");
 
@@ -203,7 +203,6 @@ CPUTTexture *FaceMappingEngine::loadTexture(std::string &dir, const char *filena
 
 void FaceMappingEngine::loadHeadTextures(std::string headDir)
 {
-    mHeadInfo.BaseHeadMesh = &mBaseMesh;
     mHeadInfo.Textures[eBaseHeadTexture_ControlMap_Displacement] = loadTexture(headDir, "DisplacementControlMap.png");
     mHeadInfo.Textures[eBaseHeadTexture_ControlMap_Color] = loadTexture(headDir, "ColorControlMap.png");
     mHeadInfo.Textures[eBaseHeadTexture_FeatureMap] = loadTexture(headDir, "FeatureMap.png");
@@ -316,7 +315,7 @@ void FaceMappingEngine::loadMorphTargets(CPUTAssetSet* headSet)
                     loadCPUTModelToSWMesh(headSet, morphModelName.c_str(), &tempMesh);
 
                     CMorphTarget *morphTarget = new CMorphTarget();
-                    BuildMorphTarget(&mBaseMesh, &tempMesh, morphTarget);
+                    BuildMorphTarget(&mHeadInfo.BaseHeadMesh, &tempMesh, morphTarget);
                     mMorphTargetMap[itPart->MorphTargetName] = morphTarget;
                 }
             }

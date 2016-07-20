@@ -134,7 +134,7 @@ void CPipeline::executeHairGeometryStage(SPipelineInput *input, CPUTSoftwareMesh
 		}
 
 		SHairGeometryStageInput hairGeomInput;
-		hairGeomInput.BaseHead = input->BaseHeadInfo->BaseHeadMesh;
+        hairGeomInput.BaseHead = &input->BaseHeadInfo->BaseHeadMesh;
 		hairGeomInput.DeformedHead = deformedHead;
 		hairGeomInput.Hair = input->HairInfo[i].Mesh;
 		hairGeomInput.ClearCachedProjections = false;
