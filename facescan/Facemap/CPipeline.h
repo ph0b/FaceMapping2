@@ -48,6 +48,9 @@ const int kLandmarkIndex_LeftEyeOutside = 14;
 const int kLandmarkIndex_RightEyeOutside = 22;
 const int kLandmarkIndex_NoseTip = 30;
 
+const int kLandmarkIndex_MouthLeft = 33;
+const int kLandmarkIndex_MouthRight = 39;
+
 const int kLandmarkIndex_FaceOutlineStart = 53;
 const int kLandmarkIndex_FaceOutlineEnd = 69;
 

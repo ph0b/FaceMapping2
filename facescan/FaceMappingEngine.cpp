@@ -625,6 +625,25 @@ void FaceMappingEngine::ExportOBJTo(std::string outFilename)
 }
 
 
+void FaceMappingEngine::GetFaceDefaultOrientation(float *outYawRad, float *outPitchRad, float *outRollRad)
+{
+    float yawDeg, pitchDeg, rollDeg;
+
+    float3 normalizedDirVec = (mFaceModel.Landmarks[kLandmarkIndex_LeftEyeAnchor] - mFaceModel.Landmarks[kLandmarkIndex_RightEyeAnchor]).normalize();
+
+    yawDeg = (atan2(normalizedDirVec.x, -normalizedDirVec.z)) * kRadToDeg + 90.;
+    rollDeg = -asin(-normalizedDirVec.y) * kRadToDeg;
+
+    float3 normalizedDirVec2 = ((mFaceModel.Landmarks[kLandmarkIndex_LeftEye] + mFaceModel.Landmarks[kLandmarkIndex_RightEye])
+                                - (mFaceModel.Landmarks[kLandmarkIndex_MouthLeft]+mFaceModel.Landmarks[kLandmarkIndex_MouthRight])).normalize();
+    pitchDeg = -(atan2(normalizedDirVec2.y, -normalizedDirVec2.z)) * kRadToDeg + 90. + 3.; // 3deg is empirical - need some tuning.
+
+    *outYawRad = yawDeg*kDegToRad;
+    *outPitchRad = pitchDeg*kDegToRad;
+    *outRollRad = rollDeg*kDegToRad;
+}
+
+
 void FaceMappingEngine::createMorphTargetEntries(std::vector<MorphTargetEntry> &list, std::vector<SMorphTweakParamDef> &defs, std::vector<float> &weights, bool post)
 {
     for (int i = 0; i < (int)defs.size(); i++)

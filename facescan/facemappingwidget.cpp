@@ -77,6 +77,8 @@ void FaceMappingWidget::startLoadingFace(QString path)
         mFMEngine->LoadFace(path.toStdString());
         //TODO: set default values, then call engine to compute adapted values to get, then set from widget (can even animate them).
 
+        mFMEngine->GetFaceDefaultOrientation(&faceOrientationYaw, &faceOrientationPitch, &faceOrientationRoll);
+        mFMEngine->SetFaceOrientation(faceOrientationYaw, faceOrientationPitch, faceOrientationRoll);
         emit faceHasLoaded();
     });
 }
@@ -112,6 +114,9 @@ void FaceMappingWidget::setPostOgre(float weight)
 }
 
 void FaceMappingWidget::setFaceOrientation(float yaw, float pitch, float roll){
+    faceOrientationYaw = yaw;
+    faceOrientationPitch = pitch;
+    faceOrientationRoll = roll;
     mFMEngine->SetFaceOrientation(yaw, pitch, roll);
 }
 

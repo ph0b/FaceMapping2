@@ -163,6 +163,8 @@ public:
     void SetBlendColor2(float r, float g, float b);
     void SetFaceZOffset(float offset);
 
+    void GetFaceDefaultOrientation(float *outYaw, float *outPitch, float *outRoll);
+
     void ExportOBJTo(std::string outFilename);
 
     void ProcessMessageLoopEvents();
