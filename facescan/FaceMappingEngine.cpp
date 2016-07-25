@@ -412,6 +412,10 @@ void FaceMappingEngine::LoadContent()
     CPUTAssetSet* headSet = mHeadAssetScene->GetAssetSet(2);
     addMorphParameters(headSet);
     loadMorphTargets(headSet);
+
+    pAssetLibrary->SetRootRelativeMediaDirectory("MyAssets");
+    std::string matName = pAssetLibrary->GetMaterialDirectoryName();
+    CPUTFileSystem::CombinePath(matName, "displace_map_render.mtl", &matName);
 }
 
 void FaceMappingEngine::addMorphParam(const char *category, const char *name, float defaultValue, const char *modelName, float range1, float range2, float apply1, float apply2)
@@ -543,11 +547,6 @@ void FaceMappingEngine::LoadFace(const std::string &filename)
 
     mObjFilename = filename;
     mFaceModel.LoadObjFilename(filename);
-
-    CPUTAssetLibrary *pAssetLibrary = CPUTAssetLibrary::GetAssetLibrary();
-    pAssetLibrary->SetRootRelativeMediaDirectory("MyAssets");
-    std::string matName = pAssetLibrary->GetMaterialDirectoryName();
-    CPUTFileSystem::CombinePath(matName, "displace_map_render.mtl", &matName);
 
     mForceRebuildAll = true;
     mFaceLoaded = (mFaceModel.GetMesh()->GetVertCount() > 0);
