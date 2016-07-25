@@ -282,6 +282,8 @@ void FaceMappingEngine::addMorphParameters(CPUTAssetSet* headSet)
     def.Reset("Shape", "Ogre", 0.0f);
     def.MorphParts.push_back(SMorphTweakParamPart("shape_Ogre", 0.0f, 1.0f, 0.0f, 1.0f));
     mPostMorphParamDefs.push_back(def);
+
+    //TODO: add mouth_open in pre and post morph params.
 }
 
 void FaceMappingEngine::loadCPUTModelToSWMesh(CPUTAssetSet *set, const char *modelName, CPUTSoftwareMesh *outMesh)
@@ -353,12 +355,12 @@ void FaceMappingEngine::Create()
     mCameraController = cameraModelViewer;
 
     CPUTCamera *pCamera = (CPUTCamera*)mCameraController->GetCamera();
-    pCamera->SetFov(20.f * float(3.14159265359 / 180.0));
+    pCamera->SetFov(20.f * kDegToRad);
     pCamera->SetNearPlaneDistance(0.1f);
     pCamera->SetFarPlaneDistance(400.0f);
 
     cameraModelViewer->SetTarget(float3(0, 0, 0));
-    cameraModelViewer->SetDistance(120.0f, 0.1f, 300.0f);
+    cameraModelViewer->SetDistance(120.0f, 15.f, 200.0f);
     cameraModelViewer->SetViewAngles(0, 0);
 }
 
