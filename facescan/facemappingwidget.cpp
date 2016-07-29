@@ -94,6 +94,9 @@ void FaceMappingWidget::setMorphParamWeight(int idx, float weight)
 {
     if(mFMEngine->IsFaceLoaded()){
         mFMEngine->SetMorphParamWeight(idx, weight);
+
+        if(idx == MorphParamIndexes::Mouth_Open) // let's have mouth closing in post be a function of how open it was in pre. TODO: clean-up the engine and have it done there?
+            mFMEngine->SetPostMorphParamWeight(PostMorphParamIndexes::Mouth_Closed, weight);
     }
 }
 
@@ -138,12 +141,12 @@ void FaceMappingWidget::setFaceOrientationRoll(float roll){
 void FaceMappingWidget::setBlendColor1(QColor color)
 {
     blendColor1 = color;
-    mFMEngine->SetBlendColor1(color.redF(), color.greenF(), color.blueF());
+    mFMEngine->SetBlendColor1(color.red(), color.green(), color.blue());
 }
 
 void FaceMappingWidget::setBlendColor2(QColor color){
     blendColor2 = color;
-    mFMEngine->SetBlendColor2(color.redF(), color.greenF(), color.blueF());
+    mFMEngine->SetBlendColor2(color.red(), color.green(), color.blue());
 }
 
 void FaceMappingWidget::setFaceZOffset(float offset){

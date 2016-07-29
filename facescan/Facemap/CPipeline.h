@@ -51,6 +51,9 @@ const int kLandmarkIndex_NoseTip = 30;
 const int kLandmarkIndex_MouthLeft = 33;
 const int kLandmarkIndex_MouthRight = 39;
 
+const int kLandmarkIndex_UpperLipBottom = 47;
+const int kLandmarkIndex_LowerLipTop = 51;
+
 const int kLandmarkIndex_FaceOutlineStart = 53;
 const int kLandmarkIndex_FaceOutlineEnd = 69;
 
@@ -60,9 +63,6 @@ const int kLandmarkIndex_ChinRight = 62;
 
 const int kLandmarkIndex_FaceLeft = 53;
 const int kLandmarkIndex_FaceRight = 69;
-
-const int kLandmarkIndex_LipBottom = 51;
-
 
 const int kLandmarkIndex_LeftEyeAnchor = kLandmarkIndex_LeftEye;
 const int kLandmarkIndex_RightEyeAnchor = kLandmarkIndex_RightEye;

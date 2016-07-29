@@ -43,19 +43,6 @@ public:
     ~FaceMappingWidget();
     QSize sizeHint() const;
 
-    struct PostMorphParamIndexes { enum { Post_BMI=0, Post_Ogre}; };
-
-    struct MorphParamIndexes { enum {  HeadWidth = 0, Eye_Area_Width, Cheekbone_Width,
-                                       OCC_Width, Jaw_Width, Jaw_Level, Chin_Width, Neck_Width,
-                                       Shape_1, Shape_2, Shape_3, Width, Roundness, BMI, Cheekbone_Size,
-                                       Jaw_Chin_Protrude, Jaw_Chin_Level, Jaw_Neck_Slope,
-                                       Jaw_Angle, Brow_Thickness, Brow_Height, Chin_Front,
-                                       Ovalness}; };
-
-    struct HairIndexes {enum { HairLess = 0, Short, Medium, Long, Helmet_Short, Helmet_2, Helmet_3, Helmet_4 };};
-
-    struct BeardIndexes {enum { Chops = 0, Goatee, Moustache, SideBurns, SoulPatch };};
-
 public slots:
     void setHairIndex(int idx);
     void setBeardIndex(int idx, bool enable=true);

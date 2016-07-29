@@ -205,13 +205,17 @@ void CHeadGeometryStage::updateMorphVsScanDeltas(const std::vector<float2> &mapL
         return vec1 - vec2;
     };
 
-    float chinHeightOnBaseScan = abs(diffVecBaseScan(kLandmarkIndex_LipBottom, kLandmarkIndex_ChinBottom).y);
-    float chinHeightOnMorphedHead = abs(diffVecMorphedHead(kLandmarkIndex_LipBottom, kLandmarkIndex_ChinBottom).y);
+    float chinHeightOnBaseScan = abs(diffVecBaseScan(kLandmarkIndex_LowerLipTop, kLandmarkIndex_ChinBottom).y);
+    float chinHeightOnMorphedHead = abs(diffVecMorphedHead(kLandmarkIndex_LowerLipTop, kLandmarkIndex_ChinBottom).y);
     MorphVsScanChinHeightDelta = (chinHeightOnMorphedHead - chinHeightOnBaseScan)/chinHeightOnBaseScan;
 
     float faceWidthOnBaseScan = abs(diffVecBaseScan(kLandmarkIndex_FaceRight, kLandmarkIndex_FaceLeft).x);
     float faceWidthOnMorphedHead = abs(diffVecMorphedHead(kLandmarkIndex_FaceRight, kLandmarkIndex_FaceLeft).x);
     MorphVsScanFaceWidthDelta = (faceWidthOnMorphedHead - faceWidthOnBaseScan)/faceWidthOnBaseScan;
+
+    float lipsSpacingOnBaseScan = abs(diffVecBaseScan(kLandmarkIndex_UpperLipBottom, kLandmarkIndex_LowerLipTop).y);
+    float lipsSpacingOnMorphedHead = abs(diffVecMorphedHead(kLandmarkIndex_UpperLipBottom, kLandmarkIndex_LowerLipTop).y);
+    MorphVsScanLipsSpacingDelta = (lipsSpacingOnMorphedHead - lipsSpacingOnBaseScan)/lipsSpacingOnBaseScan;
 }
 
 void CHeadGeometryStage::updateMorphedLandmarkMesh(CPUTSoftwareMesh* landmarkMesh, const std::vector<float2>& mapLandmarks, const float4x4& mapToHeadSpaceTransform)

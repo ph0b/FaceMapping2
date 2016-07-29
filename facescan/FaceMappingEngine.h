@@ -37,6 +37,19 @@
 #include "CFaceModel.h"
 #include "FaceMap/CPipeline.h"
 
+struct PostMorphParamIndexes { enum { Post_BMI=0, Post_Ogre, Mouth_Closed}; };
+
+struct MorphParamIndexes { enum {  HeadWidth = 0, Eye_Area_Width, Cheekbone_Width,
+                                   OCC_Width, Jaw_Width, Jaw_Level, Chin_Width, Neck_Width,
+                                   Shape_1, Shape_2, Shape_3, Width, Roundness, BMI, Cheekbone_Size,
+                                   Chin_Protrude, Chin_Level, Neck_Slope,
+                                   Mouth_Open, Brow_Thickness, Brow_Height, Chin_Front,
+                                   Ovalness}; };
+
+struct HairIndexes {enum { HairLess = 0, Short, Medium, Long, Helmet_Short, Helmet_2, Helmet_3, Helmet_4 };};
+
+struct BeardIndexes {enum { Chops = 0, Goatee, Moustache, SideBurns, SoulPatch };};
+
 enum DebugHeadDisplayTexture
 {
     DebugHeadDisplayTexture_None,

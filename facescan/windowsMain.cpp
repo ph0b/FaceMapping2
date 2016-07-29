@@ -50,12 +50,13 @@ int main(int argc, char **argv)
 
     QObject::connect(&fmw, &FaceMappingWidget::faceHasLoaded, &fmw, [&fmw]{
         QTimer::singleShot(1000, &fmw, [&fmw] {
-            fmw.setMorphParamWeight(FaceMappingWidget::MorphParamIndexes::Jaw_Level, 0.5f);
-            fmw.setMorphParamWeight(FaceMappingWidget::MorphParamIndexes::Jaw_Chin_Level, 0.7f);
-            fmw.setMorphParamWeight(FaceMappingWidget::MorphParamIndexes::Chin_Width, 0.4f);
-            fmw.setMorphParamWeight(FaceMappingWidget::MorphParamIndexes::Jaw_Chin_Protrude, 0.3f);
-            fmw.setHairIndex(FaceMappingWidget::HairIndexes::Helmet_2);
-            fmw.setBeardIndex(FaceMappingWidget::BeardIndexes::Moustache);
+            fmw.setMorphParamWeight(MorphParamIndexes::Mouth_Open, 0.45f);
+            fmw.setMorphParamWeight(MorphParamIndexes::Jaw_Level, 0.6f);
+            fmw.setMorphParamWeight(MorphParamIndexes::Chin_Level, 0.4f);
+            fmw.setMorphParamWeight(MorphParamIndexes::Chin_Width, 0.4f);
+            fmw.setMorphParamWeight(MorphParamIndexes::Chin_Protrude, 0.3f);
+            fmw.setHairIndex(HairIndexes::Helmet_Short);
+            //fmw.setBeardIndex(BeardIndexes::Moustache);
         });
 
 //        QTimer::singleShot(10000, &fmw, [&fmw] {

@@ -238,7 +238,7 @@ void FaceMappingEngine::addMorphParameters(CPUTAssetSet* headSet)
     addMorphParam("Jaw", "Chin Level", 0.5f,"shape_chin_level", 0.0f, 1.0f, 0.0f, 2.0f);
 
     addMorphParam("Other", "Neck Slope", 0.0f, "shape_chin_neck_slope", 0.0f, 1.0f, 0.0f, 1.0f);
-    addMorphParam("Other", "Jaw Angle", 0.5f,"shape_Mouth_Open", 0.0f, 0.5f, 0.8f, -0.8f);
+    addMorphParam("Other", "Mouth Open", 0.1f,"shape_Mouth_Open", 0.0f, 1.0f, -0.1f, 0.9f);
     addMorphParam("Other", "Brow Thickness", 0.5f, "shape_Brow_Thin", 0.0f, 0.5f, 1.5f, 0.0f,
                   "shape_Brow_Thick", 0.5f, 1.0f, 0.0f, 1.5f);
     addMorphParam("Other", "Brow Height", 0.5f, "shape_Brow_Height", 0.0f, 1.0f, -2.0f, 2.0f);
@@ -283,7 +283,10 @@ void FaceMappingEngine::addMorphParameters(CPUTAssetSet* headSet)
     def.MorphParts.push_back(SMorphTweakParamPart("shape_Ogre", 0.0f, 1.0f, 0.0f, 1.0f));
     mPostMorphParamDefs.push_back(def);
 
-    //TODO: add mouth_open in pre and post morph params.
+    def.Reset("Shape", "Mouth Closed", 0.1f);
+    //shifting the last two parameters here will adjust how closed is the mouth on the generated model:
+    def.MorphParts.push_back(SMorphTweakParamPart("shape_Mouth_Open", 0.0f, 1.0f, -0.1f, -1.4f));
+    mPostMorphParamDefs.push_back(def);
 }
 
 void FaceMappingEngine::loadCPUTModelToSWMesh(CPUTAssetSet *set, const char *modelName, CPUTSoftwareMesh *outMesh)
