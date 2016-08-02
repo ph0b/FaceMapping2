@@ -61,6 +61,7 @@ public:
     float MorphVsScanChinHeightDelta=FLT_MAX;
     float MorphVsScanFaceWidthDelta=FLT_MAX;
     float MorphVsScanLipsSpacingDelta=FLT_MAX;
+    float MorphVsScanChinWidthDelta=FLT_MAX;
 
 protected:
     void updateLandmarksToMorphedMeshVerticesMapItem(int landmarkIndex, int vIdx, float distance);

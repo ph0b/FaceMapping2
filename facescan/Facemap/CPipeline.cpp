@@ -175,3 +175,15 @@ void CPipeline::Execute(SPipelineInput *input, CPipelineOutput *output)
 	}
 
 }
+
+void CPipeline::ExecuteForDeltas(SPipelineInput *input, float* widthDelta, float* chinHeightDelta, float* lipsDelta, float* chinWidthDelta)
+{
+    executeDisplacementMapStage(input);
+
+    executeHeadGeometryStage(input, &DisplacementMapStage->Output);
+
+    *widthDelta = HeadGeometryStage->MorphVsScanFaceWidthDelta;
+    *chinHeightDelta = HeadGeometryStage->MorphVsScanChinHeightDelta;
+    *lipsDelta = HeadGeometryStage->MorphVsScanLipsSpacingDelta;
+    *chinWidthDelta = HeadGeometryStage->MorphVsScanChinWidthDelta;
+}

@@ -79,6 +79,14 @@ void FaceMappingWidget::startLoadingFace(QString path)
 
         mFMEngine->GetFaceDefaultOrientation(&faceOrientationYaw, &faceOrientationPitch, &faceOrientationRoll);
         mFMEngine->SetFaceOrientation(faceOrientationYaw, faceOrientationPitch, faceOrientationRoll);
+
+        float faceWidthValue, chinLevelValue, mouthOpenValue, chinWidthValue;
+        mFMEngine->GetFaceDefaultMappingValues(&faceWidthValue, &chinLevelValue, &mouthOpenValue, &chinWidthValue);
+        setMorphParamWeight(MorphParamIndexes::Width, faceWidthValue);
+        setMorphParamWeight(MorphParamIndexes::Chin_Level, chinLevelValue);
+        setMorphParamWeight(MorphParamIndexes::Mouth_Open, mouthOpenValue);
+        setMorphParamWeight(MorphParamIndexes::Chin_Width, chinWidthValue);
+
         emit faceHasLoaded();
     });
 }

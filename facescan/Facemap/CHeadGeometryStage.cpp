@@ -216,6 +216,10 @@ void CHeadGeometryStage::updateMorphVsScanDeltas(const std::vector<float2> &mapL
     float lipsSpacingOnBaseScan = abs(diffVecBaseScan(kLandmarkIndex_UpperLipBottom, kLandmarkIndex_LowerLipTop).y);
     float lipsSpacingOnMorphedHead = abs(diffVecMorphedHead(kLandmarkIndex_UpperLipBottom, kLandmarkIndex_LowerLipTop).y);
     MorphVsScanLipsSpacingDelta = (lipsSpacingOnMorphedHead - lipsSpacingOnBaseScan)/lipsSpacingOnBaseScan;
+
+    float chinWidthOnBaseScan = abs(diffVecBaseScan(kLandmarkIndex_ChinLeft, kLandmarkIndex_ChinRight).x);
+    float chinWidthOnMorphedHead = abs(diffVecMorphedHead(kLandmarkIndex_ChinLeft, kLandmarkIndex_ChinRight).x);
+    MorphVsScanChinWidthDelta = (chinWidthOnMorphedHead - chinWidthOnBaseScan)/chinWidthOnBaseScan;
 }
 
 void CHeadGeometryStage::updateMorphedLandmarkMesh(CPUTSoftwareMesh* landmarkMesh, const std::vector<float2>& mapLandmarks, const float4x4& mapToHeadSpaceTransform)

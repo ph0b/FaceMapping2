@@ -178,6 +178,8 @@ public:
 
     void GetFaceDefaultOrientation(float *outYaw, float *outPitch, float *outRoll);
 
+    void GetFaceDefaultMappingValues(float* faceWidthValue, float* chinLevelValue, float* mouthOpenValue, float *chinWidthValue);
+
     void ExportOBJTo(std::string outFilename);
 
     void ProcessMessageLoopEvents();
@@ -187,7 +189,7 @@ protected:
     void loadCubeMap(std::string mediaDir);
     void loadHeadModelAndAssets(std::string mediaDir);
     void loadHeadTextures(std::string headDir);
-    void addMorphParameters(CPUTAssetSet* headSet);
+    void addMorphParameters();
     void loadMorphTargets(CPUTAssetSet* headSet);
 
     CPUTTexture *loadTexture(std::string &dir, const char *filename);

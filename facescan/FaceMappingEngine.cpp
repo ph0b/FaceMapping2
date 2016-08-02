@@ -210,7 +210,7 @@ void FaceMappingEngine::loadHeadTextures(std::string headDir)
     mHeadInfo.Textures[eBaseHeadTexture_Skin] = loadTexture(headDir, "SkinMask.png");
 }
 
-void FaceMappingEngine::addMorphParameters(CPUTAssetSet* headSet)
+void FaceMappingEngine::addMorphParameters()
 {
     addMorphParam("Front Profile", "Head Width", 0.5f, "shape_width", 0.0f, 1.0f, -2.0f, 2.0f);
     addMorphParam("Front Profile", "Eye Area Width", 0.5f, "shape_orbit_width", 0.0f, 1.0f, -2.0f, 2.0f);
@@ -233,7 +233,7 @@ void FaceMappingEngine::addMorphParameters(CPUTAssetSet* headSet)
                   "shape_BMI_Lean", 0.0f, 0.5f, 1.0f, 0.0f);
 
     addMorphParam("Jaw", "Cheekbone", 0.0f, "shape_Cheekbone_Size", 0.0f, 1.0f, 0.0f, 1.0f);
-    addMorphParam("Jaw", "Chin Protrude", 0.5f, "shape_chin_back", 0.0f, 0.5f, 1.0f, 0.0f,
+    addMorphParam("Jaw", "Chin Protrude", 0.3f, "shape_chin_back", 0.0f, 0.5f, 1.0f, 0.0f,
                   "shape_chin_front", 0.5f, 1.0f, 0.0f, 1.0f);
     addMorphParam("Jaw", "Chin Level", 0.5f,"shape_chin_level", 0.0f, 1.0f, 0.0f, 2.0f);
 
@@ -285,7 +285,7 @@ void FaceMappingEngine::addMorphParameters(CPUTAssetSet* headSet)
 
     def.Reset("Shape", "Mouth Closed", 0.1f);
     //shifting the last two parameters here will adjust how closed is the mouth on the generated model:
-    def.MorphParts.push_back(SMorphTweakParamPart("shape_Mouth_Open", 0.0f, 1.0f, -0.1f, -1.4f));
+    def.MorphParts.push_back(SMorphTweakParamPart("shape_Mouth_Open", 0.0f, 1.0f, -0.1f, -1.1f));
     mPostMorphParamDefs.push_back(def);
 }
 
@@ -413,7 +413,7 @@ void FaceMappingEngine::LoadContent()
     loadHeadTextures(headDir);
 
     CPUTAssetSet* headSet = mHeadAssetScene->GetAssetSet(2);
-    addMorphParameters(headSet);
+    addMorphParameters();
     loadMorphTargets(headSet);
 
     pAssetLibrary->SetRootRelativeMediaDirectory("MyAssets");
@@ -632,18 +632,74 @@ void FaceMappingEngine::GetFaceDefaultOrientation(float *outYawRad, float *outPi
 {
     float yawDeg, pitchDeg, rollDeg;
 
-    float3 normalizedDirVec = (mFaceModel.Landmarks[kLandmarkIndex_LeftEyeAnchor] - mFaceModel.Landmarks[kLandmarkIndex_RightEyeAnchor]).normalize();
+    float3 v1 = (mFaceModel.Landmarks[kLandmarkIndex_LeftEyeOutside] - mFaceModel.Landmarks[kLandmarkIndex_RightEyeOutside]).normalize();
+    float3 v2 = (mFaceModel.Landmarks[kLandmarkIndex_LeftEye] - mFaceModel.Landmarks[kLandmarkIndex_RightEye]).normalize();
+    float3 normalizedDirVec = (v1+v2).normalize();
 
     yawDeg = (atan2(normalizedDirVec.x, -normalizedDirVec.z)) * kRadToDeg + 90.;
     rollDeg = -asin(-normalizedDirVec.y) * kRadToDeg;
 
-    float3 normalizedDirVec2 = ((mFaceModel.Landmarks[kLandmarkIndex_LeftEye] + mFaceModel.Landmarks[kLandmarkIndex_RightEye])
-                                - (mFaceModel.Landmarks[kLandmarkIndex_MouthLeft]+mFaceModel.Landmarks[kLandmarkIndex_MouthRight])).normalize();
+    float3 v3 = (mFaceModel.Landmarks[kLandmarkIndex_LeftEye] - mFaceModel.Landmarks[kLandmarkIndex_MouthLeft]).normalize();
+    float3 v4 = (mFaceModel.Landmarks[kLandmarkIndex_RightEye] - mFaceModel.Landmarks[kLandmarkIndex_MouthRight]).normalize();
+    float3 normalizedDirVec2 = (v3+v4).normalize();
+
     pitchDeg = -(atan2(normalizedDirVec2.y, -normalizedDirVec2.z)) * kRadToDeg + 90. + 3.; // 3deg is empirical - need some tuning.
 
     *outYawRad = yawDeg*kDegToRad;
     *outPitchRad = pitchDeg*kDegToRad;
     *outRollRad = rollDeg*kDegToRad;
+}
+
+void FaceMappingEngine::GetFaceDefaultMappingValues(float* faceWidthValue, float* chinLevelValue, float* mouthOpenValue, float* chinWidthValue)
+{
+    QMutexLocker lock(&mDX11deviceAccess);
+
+    CPUTRenderParameters renderParams;
+    SPipelineInput input;
+    input.FaceModel = &mFaceModel;
+    input.RenderParams = &renderParams;
+    input.BaseHeadInfo = &mHeadInfo;
+    input.Tweaks = &mTweaks;
+
+    auto getAdjustedMorphParam = [&] (int idx, float step) -> float {
+        float widthDelta, chinHeightDelta, lipsDelta, chinWidthDelta;
+        float* currentDelta = NULL;
+        switch(idx) {
+        case MorphParamIndexes::Width:
+            currentDelta = &widthDelta;
+            break;
+        case MorphParamIndexes::Chin_Level:
+            currentDelta = &chinHeightDelta;
+            break;
+        case MorphParamIndexes::Chin_Width:
+            currentDelta = &chinWidthDelta;
+            break;
+        case MorphParamIndexes::Mouth_Open:
+            currentDelta = &lipsDelta;
+            break;
+        }
+
+        for(float v=0.0f; v<1.0f; v+=step){
+
+            mActiveMorphParamWeights[idx] = v;
+
+            mTweaks.MorphTargetEntries.clear();
+            createMorphTargetEntries(mTweaks.MorphTargetEntries, mMorphParamDefs, mActiveMorphParamWeights, false);
+            createMorphTargetEntries(mTweaks.MorphTargetEntries, mPostMorphParamDefs, mActivePostMorphParamWeights, true);
+
+            mPipeline.ExecuteForDeltas(&input, &widthDelta, &chinHeightDelta, &lipsDelta, &chinWidthDelta);
+
+            if(*currentDelta > 0) {//we went from an inferior to a superior delta
+                return v;
+            }
+        }
+    };
+
+    *faceWidthValue = getAdjustedMorphParam(MorphParamIndexes::Width, 0.005f);
+    *chinLevelValue = getAdjustedMorphParam(MorphParamIndexes::Chin_Level, 0.005f);
+    *mouthOpenValue = getAdjustedMorphParam(MorphParamIndexes::Mouth_Open, 0.002f);
+    *chinWidthValue = getAdjustedMorphParam(MorphParamIndexes::Chin_Width, 0.005f);
+
 }
 
 

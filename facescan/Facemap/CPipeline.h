@@ -44,7 +44,9 @@ enum PIPELINE_FLAG
 
 const int kLandmarkIndex_LeftEye = 76;
 const int kLandmarkIndex_RightEye = 77;
+const int kLandmarkIndex_LeftEyeInside = 10;
 const int kLandmarkIndex_LeftEyeOutside = 14;
+const int kLandmarkIndex_RightEyeInside = 18;
 const int kLandmarkIndex_RightEyeOutside = 22;
 const int kLandmarkIndex_NoseTip = 30;
 
@@ -190,7 +192,8 @@ public:
 	CPipeline();
 	~CPipeline();
 
-	void Execute(SPipelineInput *input, CPipelineOutput *output);
+    void Execute(SPipelineInput *input, CPipelineOutput *output);
+    void ExecuteForDeltas(SPipelineInput *input, float* widthDelta, float* chinDelta, float* lipsDelta, float *chinWidthDelta);
 
 	CDisplacementMapStage *DisplacementMapStage;
 	CHeadGeometryStage *HeadGeometryStage;
