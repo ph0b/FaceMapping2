@@ -163,6 +163,9 @@ void CalculateMeshNormals(float3 *positions, uint32 *faces, int vertexCount, int
 
         float3 normal = cross3(vecAtoB, vecBtoC).normalize();
 
+        if(normal.z>0.8 && positions[idx1].z<0.) //temporary fix: avoid normals to be inverted, as everything on the front part of the head should be visible and normal.z>0.8 doesn't make sense.
+            normal=-normal;
+
         outNormals[idx1] += normal;
         outNormals[idx2] += normal;
         outNormals[idx3] += normal;
