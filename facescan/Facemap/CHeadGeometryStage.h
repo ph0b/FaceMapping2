@@ -17,6 +17,7 @@
 #define __HEAD_GEOMETRY_STAGE__
 
 #include <vector>
+#include <map>
 #include "CPUTSoftwareMesh.h"
 #include "FaceMapUtil.h"
 
@@ -73,11 +74,16 @@ protected:
     void fitDeformedMeshToFace(CPUTSoftwareTexture *controlMapColor);
     void blendDeformedMeshZAndTexture(const HeadProjectionInfo &hpi, CPUTSoftwareTexture *controlMapDisplacement, CPUTSoftwareTexture *displacementMap, bool skipDisplacementMap);
     void updateDeformedMeshNormals(CPUTSoftwareTexture *controlMapDisplacement);
+    void updateMapOfConnectedVertices(const CPUTSoftwareMesh* mesh);
+    void resetMapOfLandmarkIdxToMorphedMeshVertIdx(const CPUTSoftwareMesh *mesh);
+    void readjustConnectedVertices();
 
 private:
 	std::vector<MappedVertex> mMappedFaceVertices;
     std::vector<int> mLandmarkMeshVertexToLandmarkIndex;
 	CPUTCamera *mMapProjectionCamera;
+    std::map<int,std::vector<int>> mConnectedVertices;
+
 
 };
 

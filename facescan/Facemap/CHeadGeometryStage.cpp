@@ -351,6 +351,47 @@ void CHeadGeometryStage::updateDeformedMeshNormals(CPUTSoftwareTexture *controlM
     free(tempNormals);
 }
 
+void CHeadGeometryStage::readjustConnectedVertices()
+{
+    for(const auto& vertices: mConnectedVertices){
+        int vIdx1 = vertices.first;
+
+        float3 newPos = DeformedMesh.Pos[vIdx1];
+        for(int vIdx2: vertices.second){
+            newPos += DeformedMesh.Pos[vIdx2];
+            newPos /= 2.;
+        }
+
+        DeformedMesh.Pos[vIdx1] = newPos;
+        for(int vIdx2: vertices.second)
+            DeformedMesh.Pos[vIdx2] = newPos;
+
+    }
+}
+
+void CHeadGeometryStage::updateMapOfConnectedVertices(const CPUTSoftwareMesh *mesh)
+{
+    int vertCount = mesh->GetVertCount();
+
+    for(int i=0; i< vertCount; ++i)
+        for(int j = i+1; j < vertCount; ++j)
+            if(mesh->Pos[i] == mesh->Pos[j])
+                mConnectedVertices[i].push_back(j);
+}
+
+void CHeadGeometryStage::resetMapOfLandmarkIdxToMorphedMeshVertIdx(const CPUTSoftwareMesh *landmarkMesh)
+{
+    int landmarksCount = landmarkMesh->GetVertCount();
+    if(LandmarkIdxToMorphedMeshVertIdx.size()!=landmarksCount){
+        LandmarkIdxToMorphedMeshVertIdx.clear();
+        LandmarkIdxToMorphedMeshVertIdx.reserve(landmarksCount);
+        for (int i = 0; i < landmarksCount; i++)
+        {
+            LandmarkIdxToMorphedMeshVertIdx.push_back(std::make_pair(-1,FLT_MAX));
+        }
+    }
+}
+
 void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
 {
     assert(input->BaseHeadInfo->BaseHeadMesh.Pos);
@@ -375,15 +416,9 @@ void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
         // Project face vertices onto original landmark mesh
         ProjectMeshVerticesOntoMeshTriangles(&input->BaseHeadInfo->BaseHeadMesh, &input->BaseHeadInfo->LandmarkMesh, mMappedFaceVertices);
 
-        int landmarksCount = input->BaseHeadInfo->LandmarkMesh.GetVertCount();
-        if(LandmarkIdxToMorphedMeshVertIdx.size()!=landmarksCount){
-            LandmarkIdxToMorphedMeshVertIdx.clear();
-            LandmarkIdxToMorphedMeshVertIdx.reserve(landmarksCount);
-            for (int i = 0; i < landmarksCount; i++)
-            {
-                LandmarkIdxToMorphedMeshVertIdx.push_back(std::make_pair(-1,FLT_MAX));
-            }
-        }
+        resetMapOfLandmarkIdxToMorphedMeshVertIdx(&input->BaseHeadInfo->LandmarkMesh);
+
+        updateMapOfConnectedVertices(&input->BaseHeadInfo->BaseHeadMesh);
     }
 
     DeformedMesh.CopyFrom(&input->BaseHeadInfo->BaseHeadMesh);
@@ -395,6 +430,8 @@ void CHeadGeometryStage::Execute(SHeadGeometryStageInput *input)
         fitDeformedMeshToFace(controlMapColor);
 
     blendDeformedMeshZAndTexture(hpi, controlMapDisplacement, input->DisplacementMap, (input->Flags & PIPELINE_FLAG_SkipDisplacementMap)!=0);
+
+    readjustConnectedVertices();
 
     updateLandmarksToMorphedMeshVerticesMap();
     updateMorphVsScanDeltas(input->DisplacementMapInfo->MapLandmarks, hpi.MapToHeadSpaceTransform, &DeformedMesh);
