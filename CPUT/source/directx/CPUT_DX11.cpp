@@ -858,9 +858,6 @@ void CPUT_DX11::InnerExecutionLoop()
     }
     else
     {
-#ifndef _DEBUG
-        exit(0);
-#endif
         Present(); // Need to present, or will leak all references held by previous Render()!
         ShutdownAndDestroy();
     }

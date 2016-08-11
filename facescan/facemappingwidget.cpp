@@ -54,7 +54,6 @@ FaceMappingWidget::~FaceMappingWidget() {
 
     stopRenderingLoop();
 
-    mFMEngine->ReleaseResources();
     mFMEngine->DeviceShutdown();
 
     delete mFMEngine;
@@ -75,7 +74,6 @@ void FaceMappingWidget::startLoadingFace(QString path)
     QtConcurrent::run([=] {
 
         mFMEngine->LoadFace(path.toStdString());
-        //TODO: set default values, then call engine to compute adapted values to get, then set from widget (can even animate them).
 
         mFMEngine->GetFaceDefaultOrientation(&faceOrientationYaw, &faceOrientationPitch, &faceOrientationRoll);
         mFMEngine->SetFaceOrientation(faceOrientationYaw, faceOrientationPitch, faceOrientationRoll);

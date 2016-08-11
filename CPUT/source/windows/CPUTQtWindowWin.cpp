@@ -8,7 +8,6 @@
 #include <QWidget>
 
 #include <QResizeEvent>
-#include <QDebug>
 #include <QImageReader>
 
 QDXWidget::QDXWidget(QWidget *parent) :

@@ -497,8 +497,9 @@ void FaceMappingEngine::SetBeardIndex(int beardIndex, bool enable)
 
 void FaceMappingEngine::Shutdown()
 {
-    QMutexLocker lock(&mDX11deviceAccess);
     CPUT_DX11::Shutdown();
+
+    QMutexLocker lock(&mDX11deviceAccess);
 
     SAFE_DELETE(mCameraController);
     SAFE_DELETE(mHeadAssetScene);
@@ -538,6 +539,12 @@ void FaceMappingEngine::Shutdown()
     SAFE_DELETE(mpShadowRenderTarget);
     CPUTAssetLibrary::GetAssetLibrary()->ReleaseAllLibraryLists();
     CPUT_DX11::ReleaseResources();
+
+    //TODO: no CPUTWindow member should be static, fix it and remove the following lines.
+    CPUTWindow::mResizeEventCallbacks.clear();
+    CPUTWindow::mKeyboardEventCallbacks.clear();
+    CPUTWindow::mMouseEventCallbacks.clear();
+    CPUTWindow::mLoopEventCallbacks.clear();
 }
 
 QWidget& FaceMappingEngine::GetQWidget(){
